@@ -125,53 +125,51 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 .nitem svg{width:22px;height:22px;fill:currentColor}
 .nlbl{font-size:10px;font-weight:600;letter-spacing:0.02em}
 
-/* ── MODALS (shared base) ── */
+/* MODAL */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s}
 .modal.open{opacity:1;pointer-events:all}
 .msheet{background:var(--s1);border-radius:22px 22px 0 0;padding:24px 20px calc(env(safe-area-inset-bottom,0px)+30px);width:100%;max-width:430px;border-top:1px solid var(--border);transform:translateY(20px);transition:transform 0.25s;max-height:90vh;overflow-y:auto}
 .modal.open .msheet{transform:translateY(0)}
 .mhandle{width:36px;height:4px;background:var(--s3);border-radius:2px;margin:0 auto 20px}
-.mtitle{font-size:17px;font-weight:700;margin-bottom:6px}
-.msub{font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:16px}
-.msub code{font-family:var(--mono);background:var(--s3);padding:1px 6px;border-radius:4px;color:#a0d8ef;font-size:11px}
-.msub a{color:var(--blue-t);text-decoration:none}
-.msub a:hover{text-decoration:underline}
-.mfield{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--t1);font-family:var(--font);outline:none;margin-bottom:10px;transition:border-color 0.2s}
+.mtitle{font-size:17px;font-weight:700;margin-bottom:14px}
+.mlabel{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;display:block;margin-top:12px}
+.mfield{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--t1);font-family:var(--font);outline:none;margin-bottom:4px;transition:border-color 0.2s}
 .mfield:focus{border-color:var(--red)}
 .mfield::placeholder{color:var(--t3)}
-.mlabel{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;display:block}
-.mbtn{width:100%;border:none;border-radius:11px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);margin-bottom:8px;transition:opacity 0.15s,transform 0.1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.mhint{font-size:11px;color:var(--t3);line-height:1.6;margin-bottom:4px}
+.mhint a{color:var(--blue-t);text-decoration:none}
+.mhint code{font-family:var(--mono);background:var(--s3);padding:1px 5px;border-radius:4px;color:#a0d8ef;font-size:10px}
+.mbtn{width:100%;border:none;border-radius:11px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);margin-top:10px;transition:opacity 0.15s,transform 0.1s;display:flex;align-items:center;justify-content:center;gap:8px}
 .mbtn:active{opacity:0.85;transform:scale(0.98)}
 .mbtn-primary{background:var(--red);color:#fff;box-shadow:0 4px 20px var(--red-glow)}
-.mbtn-secondary{background:var(--s3);color:var(--t2)}
 .mbtn-blue{background:var(--blue);color:#fff;box-shadow:0 4px 20px rgba(58,106,255,0.3)}
-.mrow{display:flex;gap:8px}
-.mrow .mbtn{margin-bottom:0}
-.mdivider{height:1px;background:var(--border);margin:16px 0}
-.mstep{display:flex;gap:12px;margin-bottom:14px}
-.mstep-num{width:24px;height:24px;border-radius:50%;background:var(--s3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--t2);flex-shrink:0;margin-top:1px}
-.mstep-body{flex:1}
-.mstep-title{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:3px}
-.mstep-desc{font-size:12px;color:var(--t2);line-height:1.6}
-.mstep-desc a{color:var(--blue-t);text-decoration:none}
-.mstep-desc code{font-family:var(--mono);background:var(--s3);padding:1px 5px;border-radius:4px;color:#a0d8ef;font-size:11px}
-.auth-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:12px}
-.auth-status.ok{background:rgba(46,194,126,0.1);border:1px solid rgba(46,194,126,0.3);color:var(--green)}
-.auth-status.err{background:rgba(255,0,51,0.1);border:1px solid rgba(255,0,51,0.3);color:var(--red2)}
-.auth-status.info{background:var(--s2);border:1px solid var(--border);color:var(--t2)}
+.mbtn-secondary{background:var(--s3);color:var(--t2)}
+.mrow{display:flex;gap:8px;margin-top:10px}
+.mrow .mbtn{margin-top:0}
+.mdivider{height:1px;background:var(--border);margin:18px 0}
+.mstep{display:flex;gap:11px;margin-bottom:13px;align-items:flex-start}
+.mstep-num{width:22px;height:22px;border-radius:50%;background:var(--s3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--t2);flex-shrink:0;margin-top:1px}
+.mstep-body{flex:1;font-size:13px;color:var(--t2);line-height:1.65}
+.mstep-body strong{color:var(--t1);font-weight:600}
+.mstep-body a{color:var(--blue-t);text-decoration:none}
+.mstep-body code{font-family:var(--mono);background:var(--s3);padding:1px 5px;border-radius:4px;color:#a0d8ef;font-size:11px;word-break:break-all}
+.banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px}
+.banner.ok{background:rgba(46,194,126,0.1);border:1px solid rgba(46,194,126,0.3);color:var(--green)}
+.banner.err{background:rgba(255,0,51,0.1);border:1px solid rgba(255,0,51,0.3);color:var(--red2)}
+.banner.info{background:var(--s2);border:1px solid var(--border);color:var(--t2)}
+.banner svg{flex-shrink:0}
+
+/* LOADING OVERLAY */
+.loader{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:100;transition:opacity 0.4s}
+.loader.gone{opacity:0;pointer-events:none}
+.spinner{width:36px;height:36px;border:3px solid var(--s3);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite}
 
 /* TOAST */
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(6px);background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--t1);z-index:999;opacity:0;transition:opacity 0.2s,transform 0.2s;pointer-events:none;white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* LOADING OVERLAY */
-.loading-overlay{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:100;transition:opacity 0.4s}
-.loading-overlay.hidden{opacity:0;pointer-events:none}
-.spinner{width:36px;height:36px;border:3px solid var(--s3);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:14px;color:var(--t2)}
-
 /* ANIMATIONS */
+@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .pulse{animation:pulse 1.4s ease-in-out infinite}
 @keyframes eq1{from{height:3px}to{height:11px}}
@@ -187,10 +185,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 <body>
 <div class="app">
 
-  <!-- LOADING OVERLAY -->
-  <div class="loading-overlay" id="loading-overlay">
+  <div class="loader" id="loader">
     <div class="spinner"></div>
-    <div class="loading-text" id="loading-text">Connecting to Sonos…</div>
+    <div style="font-size:14px;color:var(--t2)" id="loader-text">Connecting…</div>
   </div>
 
   <!-- TOPBAR -->
@@ -210,7 +207,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     </div>
   </div>
 
-  <!-- MAIN CONTENT -->
   <div class="scroller">
 
     <!-- NOW PLAYING -->
@@ -266,8 +262,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
       </div>
     </div>
     <div class="rooms-grid" id="rooms-grid">
-      <div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--t3);font-size:13px">
-        Connect your Sonos account to see rooms
+      <div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--t3);font-size:13px;line-height:1.7">
+        Connect your Sonos account<br>via Settings to see your rooms
       </div>
     </div>
 
@@ -281,7 +277,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     </div>
     <div class="qlist" id="qlist"></div>
     <div style="height:20px"></div>
-
   </div>
 
   <!-- BOTTOM NAV -->
@@ -292,89 +287,68 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     <div class="nitem" onclick="openSettings()"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.4-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.04.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg><span class="nlbl">Settings</span></div>
   </div>
 
-</div><!-- /app -->
+</div>
 
-<!-- ══════════════════════════════
-     SETTINGS / AUTH MODAL
-══════════════════════════════ -->
-<div class="modal" id="settings-modal" onclick="onModalBg(event,'settings-modal')">
+<!-- SETTINGS MODAL -->
+<div class="modal" id="modal" onclick="onModalBg(event)">
   <div class="msheet">
     <div class="mhandle"></div>
-    <div class="mtitle">Sonos Account</div>
+    <div class="mtitle">Connect to Sonos</div>
 
-    <!-- Auth status banner -->
-    <div class="auth-status info" id="auth-banner">
+    <div class="banner info" id="banner">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-      <span id="auth-banner-text">Not connected</span>
+      <span id="banner-text">Not connected</span>
     </div>
 
-    <div class="mdivider"></div>
-
-    <!-- STEP 1 -->
+    <!-- Step 1: Deploy Worker -->
     <div class="mstep">
       <div class="mstep-num">1</div>
       <div class="mstep-body">
-        <div class="mstep-title">Create a Sonos integration</div>
-        <div class="mstep-desc">
-          Go to <a href="https://developer.sonos.com" target="_blank">developer.sonos.com</a>,
-          sign in with your Sonos account, click <strong>Create integration</strong>,
-          choose <strong>Control Integration</strong>, and set the redirect URI to:<br><br>
-          <code id="redirect-uri-display">loading…</code>
-        </div>
+        <strong>Deploy the Cloudflare Worker</strong><br>
+        Go to <a href="https://workers.cloudflare.com" target="_blank">workers.cloudflare.com</a>
+        (free account), create a new Worker, paste in the <code>sonos-worker.js</code> file,
+        then add these environment variables in the Worker settings:<br><br>
+        <code>SONOS_CLIENT_ID</code> — from developer.sonos.com<br>
+        <code>SONOS_CLIENT_SECRET</code> — from developer.sonos.com<br>
+        <code>ALLOWED_ORIGIN</code> — your GitHub Pages URL
       </div>
     </div>
 
-    <!-- STEP 2 -->
+    <!-- Step 2: Worker URL -->
     <div class="mstep">
       <div class="mstep-num">2</div>
       <div class="mstep-body">
-        <div class="mstep-title">Enter your credentials</div>
-        <div class="mstep-desc" style="margin-bottom:10px">Paste the Client ID and Client Secret from your integration.</div>
-        <span class="mlabel">Client ID</span>
-        <input class="mfield" id="client-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-        <span class="mlabel">Client Secret</span>
-        <input class="mfield" id="client-secret" type="password" placeholder="••••••••••••••••••••••••••••••••" autocomplete="off">
+        <strong>Enter your Worker URL</strong><br>
+        It looks like <code>https://your-worker.your-name.workers.dev</code>
       </div>
+    </div>
+    <span class="mlabel">Cloudflare Worker URL</span>
+    <input class="mfield" id="worker-url" placeholder="https://sonos-proxy.yourname.workers.dev" autocomplete="off" spellcheck="false">
+    <div class="mhint">Set this as your redirect URI in the <a href="https://developer.sonos.com" target="_blank">Sonos Developer Portal</a> too:<br>
+      <span id="redirect-display" style="font-family:var(--mono);font-size:10px;color:#a0d8ef;word-break:break-all"></span>
     </div>
 
-    <!-- STEP 3 -->
-    <div class="mstep">
+    <!-- Step 3: Connect -->
+    <div class="mstep" style="margin-top:14px">
       <div class="mstep-num">3</div>
       <div class="mstep-body">
-        <div class="mstep-title">Authorise with Sonos</div>
-        <div class="mstep-desc" style="margin-bottom:10px">
-          Click below to open the Sonos login page. After approving, you'll be
-          redirected back and your rooms will load automatically.
-        </div>
-        <button class="mbtn mbtn-blue" onclick="startOAuth()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-          Connect with Sonos
-        </button>
+        <strong>Sign in with Sonos</strong><br>
+        Click below — you'll approve access in your browser, then be sent straight back.
       </div>
     </div>
+    <button class="mbtn mbtn-blue" onclick="startOAuth()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+      Connect with Sonos
+    </button>
 
     <div class="mdivider"></div>
 
-    <!-- Manual token entry (fallback) -->
-    <details style="margin-bottom:12px">
-      <summary style="font-size:13px;color:var(--t2);cursor:pointer;padding:4px 0;user-select:none">
-        Already have tokens? Enter manually ›
-      </summary>
-      <div style="margin-top:12px">
-        <span class="mlabel">Access Token</span>
-        <textarea class="mfield" id="manual-token" rows="3" placeholder="Paste access token here…" style="resize:none;font-family:var(--mono);font-size:11px;line-height:1.5"></textarea>
-        <span class="mlabel">Household ID (optional)</span>
-        <input class="mfield" id="manual-household" placeholder="Sonos.xxxxxxxxxxxx.xxxxxxxxxxxxxxxx">
-        <button class="mbtn mbtn-primary" onclick="saveManualToken()">Save &amp; load rooms</button>
-      </div>
-    </details>
-
     <div class="mrow">
-      <button class="mbtn mbtn-secondary" onclick="refreshRooms()" style="flex:1">
+      <button class="mbtn mbtn-secondary" onclick="refreshRooms()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
         Refresh rooms
       </button>
-      <button class="mbtn mbtn-secondary" onclick="signOut()" style="flex:1">
+      <button class="mbtn mbtn-secondary" onclick="signOut()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
         Sign out
       </button>
@@ -387,492 +361,267 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 <script>
 'use strict';
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SONOS CLOUD API CONSTANTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const SONOS_AUTH_URL    = 'https://api.sonos.com/login/v3/oauth';
-const SONOS_TOKEN_URL   = 'https://api.sonos.com/login/v3/oauth/access';
-const SONOS_API_BASE    = 'https://api.ws.sonos.com/control/api/v1';
-const SCOPES            = 'playback-control-all';
+/* ━━━━ CONSTANTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const SONOS_AUTH_URL  = 'https://api.sonos.com/login/v3/oauth';
+const SONOS_API_BASE  = 'https://api.ws.sonos.com/control/api/v1';
+const REDIRECT_URI    = window.location.href.split('?')[0].split('#')[0];
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   STATE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-let accessToken   = null;
-let refreshToken  = null;
-let tokenExpiry   = 0;
-let householdId   = null;
-let groups        = [];   // Sonos groups (each is a "room" / zone)
-let curGroupId    = null;
-let playing       = false;
-let shuffle       = false;
-let repeatMode    = false;
-let curSec        = 0;
-let totSec        = 0;
-let progTimer     = null;
-let pollTimer     = null;
-let toastTimer    = null;
+/* ━━━━ STATE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let accessToken  = null;
+let refreshToken = null;
+let tokenExpiry  = 0;
+let householdId  = null;
+let workerUrl    = '';
+let groups       = [];
+let curGroupId   = null;
+let playing      = false;
+let shuffle      = false;
+let repeatMode   = false;
+let curSec       = 0;
+let totSec       = 0;
+let progTimer    = null;
+let pollTimer    = null;
+let toastTimer   = null;
+let queue        = [];
+let qIdx         = 0;
 
-let queue = [];
-let qIdx  = 0;
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   HELPERS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━ UTILS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const LS = localStorage;
-const REDIRECT_URI = window.location.href.split('?')[0].split('#')[0];
-
-function makeArt(bg, symbol) {
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84'><rect width='84' height='84' fill='${bg}'/><text x='42' y='54' text-anchor='middle' font-size='32' font-family='serif' fill='rgba(255,255,255,0.85)'>${symbol}</text></svg>`;
-  return 'data:image/svg+xml,' + encodeURIComponent(svg);
-}
-const ARTS = ['#8B0000','#2c3e6b','#1a4a2e','#6b2d0e','#4a1a5e','#0e3d4a','#3d2b1a','#1a3a1a'];
-const SYMBOLS = ['♪','♫','♩','♬'];
-function demoArt(i){ return makeArt(ARTS[i%ARTS.length], SYMBOLS[i%SYMBOLS.length]); }
-
 function fmt(s){ s=Math.max(0,Math.floor(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
 function x(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function setDot(state){
-  const d = document.getElementById('sdot');
-  d.className = 'sdot';
-  if(state === 'connected') d.classList.add('connected');
-  else if(state === 'error') d.classList.add('error');
-  else if(state === 'loading') d.classList.add('loading');
+function demoArt(i){
+  const bgs=['#8B0000','#2c3e6b','#1a4a2e','#6b2d0e','#4a1a5e','#0e3d4a','#3d2b1a','#1a3a1a'];
+  const syms=['♪','♫','♩','♬'];
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84'><rect width='84' height='84' fill='${bgs[i%bgs.length]}'/><text x='42' y='54' text-anchor='middle' font-size='32' font-family='serif' fill='rgba(255,255,255,0.85)'>${syms[i%syms.length]}</text></svg>`;
+  return 'data:image/svg+xml,'+encodeURIComponent(svg);
 }
-
-function setConnLabel(t){ document.getElementById('conn-lbl').textContent = t; }
-
-function hideLoader(){
-  const o = document.getElementById('loading-overlay');
-  o.classList.add('hidden');
-  setTimeout(()=>{ o.style.display='none'; }, 400);
+function setDot(s){ const d=document.getElementById('sdot'); d.className='sdot'+(s?' '+s:''); }
+function setLbl(t){ document.getElementById('conn-lbl').textContent=t; }
+function setBanner(type,text){
+  const b=document.getElementById('banner'); b.className='banner '+type;
+  document.getElementById('banner-text').textContent=text;
 }
-function showLoader(text){
-  const o = document.getElementById('loading-overlay');
-  o.style.display = '';
-  o.classList.remove('hidden');
-  if(text) document.getElementById('loading-text').textContent = text;
-}
+function hideLoader(){ const l=document.getElementById('loader'); l.classList.add('gone'); setTimeout(()=>l.style.display='none',400); }
+function showLoader(t){ const l=document.getElementById('loader'); l.style.display=''; l.classList.remove('gone'); if(t) document.getElementById('loader-text').textContent=t; }
 
-function setBanner(type, text){
-  const b = document.getElementById('auth-banner');
-  b.className = 'auth-status ' + type;
-  document.getElementById('auth-banner-text').textContent = text;
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   INIT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━ INIT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 document.addEventListener('DOMContentLoaded', async () => {
-  // Show redirect URI to user
-  document.getElementById('redirect-uri-display').textContent = REDIRECT_URI;
+  document.getElementById('redirect-display').textContent = REDIRECT_URI;
 
-  // Pre-fill saved credentials
-  const savedId  = LS.getItem('sonos_client_id');
-  const savedSec = LS.getItem('sonos_client_secret');
-  if(savedId)  document.getElementById('client-id').value  = savedId;
-  if(savedSec) document.getElementById('client-secret').value = savedSec;
+  workerUrl    = LS.getItem('sonos_worker_url') || '';
+  accessToken  = LS.getItem('sonos_access_token');
+  refreshToken = LS.getItem('sonos_refresh_token');
+  tokenExpiry  = parseInt(LS.getItem('sonos_token_expiry')||'0');
+  householdId  = LS.getItem('sonos_household_id');
 
-  // Check if we're returning from OAuth redirect (URL has ?code=)
+  if(workerUrl) document.getElementById('worker-url').value = workerUrl;
+
+  // OAuth callback — URL has ?code=
   const params = new URLSearchParams(window.location.search);
   if(params.has('code')){
     showLoader('Completing sign in…');
-    await handleOAuthCallback(params.get('code'), params.get('state'));
-    // Clean URL
     history.replaceState({}, '', REDIRECT_URI);
+    await handleCallback(params.get('code'), params.get('state'));
     return;
   }
-
-  // Try to restore saved session
-  accessToken  = LS.getItem('sonos_access_token');
-  refreshToken = LS.getItem('sonos_refresh_token');
-  tokenExpiry  = parseInt(LS.getItem('sonos_token_expiry') || '0');
-  householdId  = LS.getItem('sonos_household_id');
 
   if(accessToken){
     showLoader('Loading your Sonos system…');
-    try {
-      await loadSystem();
-    } catch(e){
-      hideLoader();
-      setDot('error');
-      setConnLabel('Auth error');
-      setBanner('err', 'Session expired — please reconnect');
-    }
+    try { await loadSystem(); }
+    catch(e){ hideLoader(); setDot('error'); setLbl('Auth error'); setBanner('err','Session expired — reconnect in Settings'); }
   } else {
     hideLoader();
-    setDot('');
-    setConnLabel('Not connected');
   }
 
-  // Render demo queue
-  initDemoQueue();
+  initQueue();
   renderQueue();
 });
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   OAUTH FLOW
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━ OAUTH ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function startOAuth(){
-  const clientId = document.getElementById('client-id').value.trim();
-  const secret   = document.getElementById('client-secret').value.trim();
-  if(!clientId){ toast('Enter your Client ID first'); return; }
+  const wu = document.getElementById('worker-url').value.trim().replace(/\/+$/,'');
+  if(!wu){ toast('Enter your Cloudflare Worker URL first'); return; }
+  workerUrl = wu;
+  LS.setItem('sonos_worker_url', wu);
 
-  // Save credentials
-  LS.setItem('sonos_client_id', clientId);
-  if(secret) LS.setItem('sonos_client_secret', secret);
-
-  // Generate & store PKCE state
-  const state = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  // We need a Client ID to build the auth URL — fetch it from the worker
+  // The worker knows the client ID from its env vars, so we ask it
+  const state = Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
   LS.setItem('sonos_oauth_state', state);
 
-  const url = new URL(SONOS_AUTH_URL);
-  url.searchParams.set('client_id', clientId);
-  url.searchParams.set('response_type', 'code');
-  url.searchParams.set('redirect_uri', REDIRECT_URI);
-  url.searchParams.set('scope', SCOPES);
-  url.searchParams.set('state', state);
-
-  window.location.href = url.toString();
+  // Build auth URL — client_id must come from the worker
+  // We'll hit a /config endpoint to get the client_id safely
+  fetchClientId(wu).then(clientId => {
+    if(!clientId){ toast('Could not reach Worker — check the URL'); return; }
+    const url = new URL(SONOS_AUTH_URL);
+    url.searchParams.set('client_id', clientId);
+    url.searchParams.set('response_type', 'code');
+    url.searchParams.set('redirect_uri', REDIRECT_URI);
+    url.searchParams.set('scope', 'playback-control-all');
+    url.searchParams.set('state', state);
+    window.location.href = url.toString();
+  }).catch(()=>toast('Could not reach Worker — check the URL and CORS settings'));
 }
 
-async function handleOAuthCallback(code, returnedState){
-  const expectedState = LS.getItem('sonos_oauth_state');
-  if(returnedState && expectedState && returnedState !== expectedState){
-    hideLoader();
-    toast('OAuth state mismatch — please try again');
-    return;
+async function fetchClientId(wu){
+  const res = await fetch(`${wu}/config`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+  if(!res.ok) return null;
+  const d = await res.json();
+  return d.client_id || null;
+}
+
+async function handleCallback(code, returnedState){
+  const expected = LS.getItem('sonos_oauth_state');
+  if(expected && returnedState && returnedState !== expected){
+    hideLoader(); toast('State mismatch — try again'); return;
   }
-
-  const clientId = LS.getItem('sonos_client_id');
-  const secret   = LS.getItem('sonos_client_secret');
-
-  if(!clientId || !secret){
-    hideLoader();
-    openSettings();
-    toast('Enter your Client Secret to complete sign in');
-    return;
-  }
-
+  if(!workerUrl){ hideLoader(); openSettings(); toast('Enter your Worker URL to complete sign in'); return; }
   try {
-    const body = new URLSearchParams({
-      grant_type:   'authorization_code',
-      code,
-      redirect_uri: REDIRECT_URI,
+    const res = await fetch(`${workerUrl}/token`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ code, redirect_uri: REDIRECT_URI }),
     });
-
-    // Sonos uses Basic auth: base64(clientId:secret)
-    const credentials = btoa(`${clientId}:${secret}`);
-
-    const res = await fetch(SONOS_TOKEN_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${credentials}`,
-      },
-      body: body.toString(),
-    });
-
-    if(!res.ok){
-      const err = await res.text();
-      throw new Error(`Token exchange failed: ${res.status} ${err}`);
-    }
-
-    const data = await res.json();
-    saveTokens(data);
+    if(!res.ok){ const e=await res.json(); throw new Error(e.error||res.status); }
+    saveTokens(await res.json());
     await loadSystem();
-
   } catch(e){
-    hideLoader();
-    setDot('error');
-    console.error(e);
-    toast('Auth failed: ' + e.message);
-    setBanner('err', 'Sign in failed — check credentials');
+    hideLoader(); setDot('error');
+    setBanner('err','Sign in failed: '+e.message);
     openSettings();
   }
 }
 
-function saveTokens(data){
-  accessToken  = data.access_token;
-  refreshToken = data.refresh_token || refreshToken;
-  tokenExpiry  = Date.now() + (data.expires_in || 3600) * 1000;
+function saveTokens(d){
+  accessToken  = d.access_token;
+  refreshToken = d.refresh_token || refreshToken;
+  tokenExpiry  = Date.now() + (d.expires_in||3600)*1000;
   LS.setItem('sonos_access_token',  accessToken);
   LS.setItem('sonos_refresh_token', refreshToken);
-  LS.setItem('sonos_token_expiry',  tokenExpiry.toString());
+  LS.setItem('sonos_token_expiry',  String(tokenExpiry));
 }
 
-async function ensureFreshToken(){
-  if(Date.now() < tokenExpiry - 60000) return; // still valid
-  const clientId = LS.getItem('sonos_client_id');
-  const secret   = LS.getItem('sonos_client_secret');
-  if(!refreshToken || !clientId || !secret) throw new Error('No refresh token');
-
-  const credentials = btoa(`${clientId}:${secret}`);
-  const res = await fetch(SONOS_TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type':  'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${credentials}`,
-    },
-    body: new URLSearchParams({
-      grant_type:    'refresh_token',
-      refresh_token: refreshToken,
-    }).toString(),
+async function ensureFresh(){
+  if(Date.now() < tokenExpiry - 60000) return;
+  if(!refreshToken||!workerUrl) throw new Error('No refresh token');
+  const res = await fetch(`${workerUrl}/refresh`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ refresh_token: refreshToken }),
   });
   if(!res.ok) throw new Error('Token refresh failed');
   saveTokens(await res.json());
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SONOS API CALLS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━ SONOS API ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 async function sonosGet(path){
-  await ensureFreshToken();
-  const res = await fetch(`${SONOS_API_BASE}${path}`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` }
-  });
+  await ensureFresh();
+  const res = await fetch(SONOS_API_BASE+path, { headers:{ Authorization:`Bearer ${accessToken}` } });
   if(!res.ok) throw new Error(`GET ${path} → ${res.status}`);
   return res.json();
 }
-
 async function sonosPost(path, body={}){
-  await ensureFreshToken();
-  const res = await fetch(`${SONOS_API_BASE}${path}`, {
-    method:  'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type':  'application/json',
-    },
+  await ensureFresh();
+  await fetch(SONOS_API_BASE+path, {
+    method:'POST',
+    headers:{ Authorization:`Bearer ${accessToken}`, 'Content-Type':'application/json' },
     body: JSON.stringify(body),
-  });
-  if(!res.ok){
-    const t = await res.text().catch(()=>'');
-    console.warn(`POST ${path} → ${res.status}`, t);
-  }
-  return res;
+  }).catch(()=>{});
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   LOAD SYSTEM (households → groups)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━ LOAD SYSTEM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 async function loadSystem(){
-  setDot('loading');
-  setConnLabel('Loading…');
-  document.getElementById('loading-text').textContent = 'Discovering your Sonos system…';
-
-  try {
-    // 1. Get households
-    const hData = await sonosGet('/households');
-    if(!hData.households || hData.households.length === 0) throw new Error('No households found');
-
-    // Use saved or first household
-    if(!householdId || !hData.households.find(h=>h.id===householdId)){
-      householdId = hData.households[0].id;
-      LS.setItem('sonos_household_id', householdId);
-    }
-
-    // 2. Get groups in household
-    await refreshGroupsOnly();
-
-    hideLoader();
-    setDot('connected');
-    setConnLabel('Connected');
-    setBanner('ok', `Connected · ${groups.length} room${groups.length!==1?'s':''} found`);
-
-    // Start polling for playback state
-    startPolling();
-
-  } catch(e){
-    hideLoader();
-    setDot('error');
-    setConnLabel('Error');
-    console.error('loadSystem:', e);
-    setBanner('err', 'Could not load rooms: ' + e.message);
-    throw e;
+  setDot('loading'); setLbl('Loading…');
+  const hData = await sonosGet('/households');
+  if(!hData.households?.length) throw new Error('No households found');
+  if(!householdId || !hData.households.find(h=>h.id===householdId)){
+    householdId = hData.households[0].id;
+    LS.setItem('sonos_household_id', householdId);
   }
+  await refreshGroups();
+  hideLoader();
+  setDot('connected'); setLbl('Connected');
+  setBanner('ok', `Connected · ${groups.length} room${groups.length!==1?'s':''} found`);
+  startPolling();
 }
 
-async function refreshGroupsOnly(){
-  const gData = await sonosGet(`/households/${householdId}/groups`);
-
-  // Map Sonos groups to our internal format
-  groups = (gData.groups || []).map(g => {
-    const existing = groups.find(eg => eg.id === g.id);
+async function refreshGroups(){
+  const d = await sonosGet(`/households/${householdId}/groups`);
+  groups = (d.groups||[]).map(g => {
+    const existing = groups.find(eg=>eg.id===g.id);
+    const player   = (d.players||[]).find(p=>g.playerIds?.includes(p.id));
     return {
       id:        g.id,
       name:      g.name,
-      playerIds: g.playerIds || [],
-      vol:       existing ? existing.vol : 50,
+      playerIds: g.playerIds||[],
+      vol:       player?.volume ?? existing?.vol ?? 50,
       grouped:   false,
-      playback:  null,
     };
   });
-
-  // Also fetch volumes via players
-  const pData = gData.players || [];
-  groups.forEach(g => {
-    // Use first player's volume as group volume
-    const player = pData.find(p => g.playerIds.includes(p.id));
-    if(player && player.volume !== undefined) g.vol = player.volume;
-  });
-
   renderRooms();
-  if(groups.length > 0 && !curGroupId){
-    // Don't auto-select but show placeholder
-  }
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   POLLING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-function startPolling(){
-  clearInterval(pollTimer);
-  pollTimer = setInterval(pollPlayback, 8000);
-  if(curGroupId) pollPlayback();
-}
+/* ━━━━ POLLING ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function startPolling(){ clearInterval(pollTimer); pollTimer=setInterval(pollPlayback,8000); }
 
 async function pollPlayback(){
-  if(!curGroupId || !accessToken) return;
+  if(!curGroupId||!accessToken) return;
   try {
     const [pb, meta] = await Promise.all([
       sonosGet(`/groups/${curGroupId}/playback`),
       sonosGet(`/groups/${curGroupId}/playbackMetadata`),
     ]);
-
-    // Sync play state
-    const nowPlaying = pb.playbackState === 'PLAYBACK_STATE_PLAYING';
-    if(nowPlaying !== playing){
-      playing = nowPlaying;
-      syncPlayIcon();
-      if(playing && !progTimer) startProg();
-      else if(!playing){ clearInterval(progTimer); progTimer=null; }
+    const nowPlaying = pb.playbackState==='PLAYBACK_STATE_PLAYING';
+    if(nowPlaying!==playing){ playing=nowPlaying; syncPlayIcon(); if(playing&&!progTimer) startProg(); else if(!playing){clearInterval(progTimer);progTimer=null;} }
+    if(pb.positionMillis!=null) curSec=Math.round(pb.positionMillis/1000);
+    if(pb.volume!=null){ const g=groups.find(g=>g.id===curGroupId); if(g) g.vol=pb.volume; document.getElementById('mvol').value=pb.volume; document.getElementById('mvol-val').textContent=pb.volume; }
+    const t = meta.currentItem?.track;
+    if(t){
+      document.getElementById('np-title').textContent  = t.name||'Unknown';
+      document.getElementById('np-artist').textContent = t.artist?.name||t.artists?.[0]?.name||'';
+      if(t.imageUrl) document.getElementById('np-art').innerHTML=`<img src="${x(t.imageUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
+      if(t.durationMillis) totSec=Math.round(t.durationMillis/1000);
+      updateProg();
     }
-
-    // Sync position
-    if(pb.positionMillis !== undefined){
-      curSec = Math.round(pb.positionMillis / 1000);
-    }
-
-    // Sync volume
-    if(pb.volume !== undefined){
-      const g = groups.find(g=>g.id===curGroupId);
-      if(g) g.vol = pb.volume;
-      document.getElementById('mvol').value = pb.volume;
-      document.getElementById('mvol-val').textContent = pb.volume;
-    }
-
-    // Sync track metadata
-    if(meta.currentItem){
-      const t = meta.currentItem.track;
-      if(t){
-        document.getElementById('np-title').textContent  = t.name || 'Unknown';
-        document.getElementById('np-artist').textContent = (t.artist?.name) || (t.artists?.[0]?.name) || '';
-        if(t.imageUrl){
-          document.getElementById('np-art').innerHTML =
-            `<img src="${x(t.imageUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"
-              onerror="this.parentElement.innerHTML='<svg width=26 height=26 viewBox=&quot;0 0 24 24&quot; fill=&quot;var(--t3)&quot;><path d=&quot;M12 3v10.55A4 4 0 1014 17V7h4V3h-6z&quot;/></svg>'">`;
-        }
-        if(t.durationMillis) totSec = Math.round(t.durationMillis / 1000);
-        updateProg();
-      }
-    }
-
-    // Sync shuffle/repeat
-    if(pb.playModes){
-      shuffle = !!pb.playModes.shuffle;
-      repeatMode = !!pb.playModes.repeat;
-      document.getElementById('shuf-btn').classList.toggle('lit', shuffle);
-      document.getElementById('rep-btn').classList.toggle('lit', repeatMode);
-    }
-
+    if(pb.playModes){ shuffle=!!pb.playModes.shuffle; repeatMode=!!pb.playModes.repeat; document.getElementById('shuf-btn').classList.toggle('lit',shuffle); document.getElementById('rep-btn').classList.toggle('lit',repeatMode); }
     renderRooms();
-  } catch(e){
-    console.warn('pollPlayback:', e.message);
-  }
+  } catch(e){ console.warn('poll:',e.message); }
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ROOMS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━ ROOMS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function selectRoom(id){
-  curGroupId = id;
-  const g = groups.find(g=>g.id===id);
-  document.getElementById('np-room').textContent = g ? g.name : id;
-  if(g){
-    document.getElementById('mvol').value = g.vol;
-    document.getElementById('mvol-val').textContent = g.vol;
-  }
-  renderRooms();
-  pollPlayback();
-  toast('Room: ' + (g?.name || id));
+  curGroupId=id;
+  const g=groups.find(g=>g.id===id);
+  document.getElementById('np-room').textContent=g?g.name:id;
+  if(g){ document.getElementById('mvol').value=g.vol; document.getElementById('mvol-val').textContent=g.vol; }
+  renderRooms(); pollPlayback(); toast('Room: '+(g?.name||id));
 }
-
-function toggleGroup(i, e){
-  e.stopPropagation();
-  groups[i].grouped = !groups[i].grouped;
-  renderRooms();
-  toast(groups[i].name + (groups[i].grouped ? ' grouped' : ' ungrouped'));
-}
-
+function toggleGroup(i,e){ e.stopPropagation(); groups[i].grouped=!groups[i].grouped; renderRooms(); toast(groups[i].name+(groups[i].grouped?' grouped':' ungrouped')); }
 async function groupAll(){
-  if(!curGroupId){ toast('Select a room first'); return; }
-  const others = groups.filter(g=>g.id!==curGroupId);
-  groups.forEach(g=>{ if(g.id!==curGroupId) g.grouped=true; });
-  renderRooms();
-  // Sonos API: add players from other groups to current group
-  for(const g of others){
-    try {
-      await sonosPost(`/groups/${curGroupId}/groups/modifyGroupMembers`, {
-        playerIdsToAdd: g.playerIds
-      });
-    } catch(e){ console.warn(e); }
+  if(!curGroupId){toast('Select a room first');return;}
+  groups.forEach(g=>{if(g.id!==curGroupId)g.grouped=true;}); renderRooms();
+  for(const g of groups.filter(g=>g.id!==curGroupId)){
+    try{ await sonosPost(`/groups/${curGroupId}/groups/modifyGroupMembers`,{playerIdsToAdd:g.playerIds}); }catch(e){}
   }
-  toast('All rooms grouped');
-  setTimeout(refreshGroupsOnly, 2000);
+  toast('All rooms grouped'); setTimeout(refreshGroups,2000);
 }
-
 async function ungroupAll(){
-  groups.forEach(g=>g.grouped=false);
-  renderRooms();
-  // Each group leaves the main group
-  for(const g of groups){
-    if(g.id !== curGroupId && g.playerIds.length){
-      try {
-        await sonosPost(`/groups/${g.id}/groups/createGroup`, {
-          playerIds: g.playerIds
-        });
-      } catch(e){ console.warn(e); }
-    }
-  }
-  toast('Rooms ungrouped');
-  setTimeout(refreshGroupsOnly, 2000);
+  groups.forEach(g=>g.grouped=false); renderRooms();
+  for(const g of groups){ if(g.id!==curGroupId&&g.playerIds.length) try{ await sonosPost(`/groups/${g.id}/groups/createGroup`,{playerIds:g.playerIds}); }catch(e){} }
+  toast('Rooms ungrouped'); setTimeout(refreshGroups,2000);
 }
-
 function renderRooms(){
-  const grid = document.getElementById('rooms-grid');
-  if(groups.length === 0){
-    grid.innerHTML = `<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--t3);font-size:13px">${accessToken ? 'Loading rooms…' : 'Connect your Sonos account to see rooms'}</div>`;
-    return;
-  }
-  grid.innerHTML = groups.map((g, i) => {
-    const active = g.id === curGroupId;
-    const isPlay = active && playing;
-    return `
-<div class="rcard${active?' active':''}${g.grouped?' grouped':''}" onclick="selectRoom('${x(g.id)}')">
+  const grid=document.getElementById('rooms-grid');
+  if(!groups.length){ grid.innerHTML=`<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--t3);font-size:13px;line-height:1.7">${accessToken?'Loading rooms…':'Connect your Sonos account<br>via Settings to see your rooms'}</div>`; return; }
+  grid.innerHTML=groups.map((g,i)=>{
+    const active=g.id===curGroupId, isPlay=active&&playing;
+    return `<div class="rcard${active?' active':''}${g.grouped?' grouped':''}" onclick="selectRoom('${x(g.id)}')">
   <div class="rcard-top">
-    <div>
-      <div class="rname">${x(g.name)}</div>
-      <div class="rstate">${isPlay
-        ? '<span class="pulse" style="color:var(--red2)">▸ Playing</span>'
-        : g.grouped&&!active ? 'Grouped' : 'Idle'}</div>
-    </div>
+    <div><div class="rname">${x(g.name)}</div><div class="rstate">${isPlay?'<span class="pulse" style="color:var(--red2)">▸ Playing</span>':g.grouped&&!active?'Grouped':'Idle'}</div></div>
     <input type="checkbox" class="rchk" ${g.grouped?'checked':''} onclick="toggleGroup(${i},event)" title="Group">
   </div>
   <div class="rvol-row">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--t3)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-    <input type="range" class="rvol" id="rvs${i}" min="0" max="100" value="${g.vol}" step="1"
-      oninput="onRoomVol(${i},this.value)" onclick="event.stopPropagation()">
+    <input type="range" class="rvol" id="rvs${i}" min="0" max="100" value="${g.vol}" step="1" oninput="onRoomVol(${i},this.value)" onclick="event.stopPropagation()">
     <span class="rvol-val" id="rvv${i}">${g.vol}</span>
   </div>
   ${isPlay?'<span class="rbadge rb-play">Playing</span>':''}
@@ -881,215 +630,56 @@ function renderRooms(){
   }).join('');
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   PLAYBACK CONTROLS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-async function togglePlay(){
-  if(!curGroupId){ toast('Select a room first'); return; }
-  playing = !playing;
-  syncPlayIcon();
-  if(playing) startProg(); else { clearInterval(progTimer); progTimer=null; }
-  renderRooms();
-  await sonosPost(`/groups/${curGroupId}/playback/${playing?'play':'pause'}`);
-}
+/* ━━━━ PLAYBACK ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function togglePlay(){ if(!curGroupId){toast('Select a room first');return;} playing=!playing; syncPlayIcon(); if(playing)startProg();else{clearInterval(progTimer);progTimer=null;} renderRooms(); await sonosPost(`/groups/${curGroupId}/playback/${playing?'play':'pause'}`); }
+function syncPlayIcon(){ document.getElementById('pico').innerHTML=playing?'<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>':'<path d="M8 5v14l11-7z"/>'; }
+async function prevTrack(){ if(!curGroupId)return; if(curSec>3){curSec=0;updateProg();await sonosPost(`/groups/${curGroupId}/playback/seek`,{positionMillis:0});return;} await sonosPost(`/groups/${curGroupId}/playback/skipToPreviousTrack`); setTimeout(pollPlayback,1000); }
+async function nextTrack(){ if(!curGroupId)return; await sonosPost(`/groups/${curGroupId}/playback/skipToNextTrack`); setTimeout(pollPlayback,1000); }
+function startProg(){ clearInterval(progTimer); progTimer=setInterval(()=>{ if(!playing)return; curSec=Math.min(curSec+1,totSec||99999); updateProg(); },1000); }
+function updateProg(){ const pct=totSec>0?Math.min((curSec/totSec)*100,100):0; document.getElementById('prog-fill').style.width=pct.toFixed(2)+'%'; document.getElementById('t-cur').textContent=fmt(curSec); document.getElementById('t-tot').textContent=fmt(totSec); }
+function seekClick(e){ if(!curGroupId||!totSec)return; const bar=document.getElementById('prog-bar'); const pct=Math.max(0,Math.min(1,e.offsetX/bar.offsetWidth)); curSec=Math.round(pct*totSec); updateProg(); sonosPost(`/groups/${curGroupId}/playback/seek`,{positionMillis:curSec*1000}); }
+async function toggleShuffle(){ shuffle=!shuffle; document.getElementById('shuf-btn').classList.toggle('lit',shuffle); if(curGroupId)await sonosPost(`/groups/${curGroupId}/playback/playMode`,{playModes:{shuffle}}); toast('Shuffle '+(shuffle?'on':'off')); }
+async function toggleRepeat(){ repeatMode=!repeatMode; document.getElementById('rep-btn').classList.toggle('lit',repeatMode); if(curGroupId)await sonosPost(`/groups/${curGroupId}/playback/playMode`,{playModes:{repeat:repeatMode}}); toast('Repeat '+(repeatMode?'on':'off')); }
 
-function syncPlayIcon(){
-  document.getElementById('pico').innerHTML = playing
-    ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
-    : '<path d="M8 5v14l11-7z"/>';
-}
+/* ━━━━ VOLUME ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function onMasterVol(v){ v=parseInt(v); document.getElementById('mvol-val').textContent=v; if(!curGroupId)return; const g=groups.find(g=>g.id===curGroupId); if(g)g.vol=v; await sonosPost(`/groups/${curGroupId}/groupVolume`,{volume:v}); }
+async function onRoomVol(i,v){ v=parseInt(v); groups[i].vol=v; document.getElementById('rvv'+i).textContent=v; await sonosPost(`/groups/${groups[i].id}/groupVolume`,{volume:v}); }
 
-async function prevTrack(){
-  if(!curGroupId) return;
-  if(curSec > 3){ curSec=0; updateProg(); await sonosPost(`/groups/${curGroupId}/playback/seek`,{positionMillis:0}); return; }
-  await sonosPost(`/groups/${curGroupId}/playback/skipToPreviousTrack`);
-  setTimeout(pollPlayback, 1000);
-}
-
-async function nextTrack(){
-  if(!curGroupId) return;
-  await sonosPost(`/groups/${curGroupId}/playback/skipToNextTrack`);
-  setTimeout(pollPlayback, 1000);
-}
-
-function startProg(){
-  clearInterval(progTimer);
-  progTimer = setInterval(()=>{
-    if(!playing) return;
-    curSec = Math.min(curSec+1, totSec||9999);
-    updateProg();
-  }, 1000);
-}
-
-function updateProg(){
-  const pct = totSec>0 ? Math.min((curSec/totSec)*100,100) : 0;
-  document.getElementById('prog-fill').style.width = pct.toFixed(2)+'%';
-  document.getElementById('t-cur').textContent = fmt(curSec);
-  document.getElementById('t-tot').textContent = fmt(totSec);
-}
-
-function seekClick(e){
-  if(!curGroupId||!totSec) return;
-  const bar = document.getElementById('prog-bar');
-  const pct = Math.max(0, Math.min(1, e.offsetX/bar.offsetWidth));
-  curSec = Math.round(pct*totSec);
-  updateProg();
-  sonosPost(`/groups/${curGroupId}/playback/seek`, { positionMillis: curSec*1000 });
-}
-
-async function toggleShuffle(){
-  shuffle = !shuffle;
-  document.getElementById('shuf-btn').classList.toggle('lit', shuffle);
-  if(curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`,{ playModes:{ shuffle } });
-  toast('Shuffle '+(shuffle?'on':'off'));
-}
-
-async function toggleRepeat(){
-  repeatMode = !repeatMode;
-  document.getElementById('rep-btn').classList.toggle('lit', repeatMode);
-  if(curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`,{ playModes:{ repeat:repeatMode } });
-  toast('Repeat '+(repeatMode?'on':'off'));
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   VOLUME
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-async function onMasterVol(v){
-  v = parseInt(v);
-  document.getElementById('mvol-val').textContent = v;
-  if(!curGroupId) return;
-  const g = groups.find(g=>g.id===curGroupId);
-  if(g) g.vol = v;
-  await sonosPost(`/groups/${curGroupId}/groupVolume`,{ volume:v });
-}
-
-async function onRoomVol(i, v){
-  v = parseInt(v);
-  groups[i].vol = v;
-  document.getElementById('rvv'+i).textContent = v;
-  await sonosPost(`/groups/${groups[i].id}/groupVolume`,{ volume:v });
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   QUEUE (local demo tracks)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-function initDemoQueue(){
-  queue = [
-    {title:'Blinding Lights', artist:'The Weeknd',    dur:'3:20', s:200, art:demoArt(0)},
-    {title:'As It Was',       artist:'Harry Styles',  dur:'2:37', s:157, art:demoArt(1)},
-    {title:'Bad Habit',       artist:'Steve Lacy',    dur:'3:51', s:231, art:demoArt(2)},
-    {title:'About Damn Time', artist:'Lizzo',         dur:'3:13', s:193, art:demoArt(3)},
-    {title:'Flowers',         artist:'Miley Cyrus',   dur:'3:21', s:201, art:demoArt(4)},
-    {title:'Levitating',      artist:'Dua Lipa',      dur:'3:23', s:203, art:demoArt(5)},
+/* ━━━━ QUEUE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function initQueue(){
+  queue=[
+    {title:'Blinding Lights',artist:'The Weeknd',    dur:'3:20',s:200,art:demoArt(0)},
+    {title:'As It Was',      artist:'Harry Styles',  dur:'2:37',s:157,art:demoArt(1)},
+    {title:'Bad Habit',      artist:'Steve Lacy',    dur:'3:51',s:231,art:demoArt(2)},
+    {title:'About Damn Time',artist:'Lizzo',         dur:'3:13',s:193,art:demoArt(3)},
+    {title:'Flowers',        artist:'Miley Cyrus',   dur:'3:21',s:201,art:demoArt(4)},
+    {title:'Levitating',     artist:'Dua Lipa',      dur:'3:23',s:203,art:demoArt(5)},
   ];
 }
-
-function addTrack(){
-  const inp = document.getElementById('yt-inp');
-  const val = inp.value.trim();
-  if(!val){ toast('Enter a URL or track name'); return; }
-  const isUrl = /^https?:/.test(val);
-  queue.push({
-    title:  isUrl ? 'YouTube Music track' : val,
-    artist: 'YouTube Music',
-    dur: '--:--', s: 0,
-    art: demoArt(queue.length)
-  });
-  inp.value = '';
-  renderQueue();
-  toast(isUrl ? 'Added to queue' : `Added: "${val}"`);
-}
-
-function removeTrack(i, e){
-  e.stopPropagation();
-  if(queue.length<=1){ toast("Can't remove the only track"); return; }
-  queue.splice(i,1);
-  if(qIdx>=queue.length) qIdx=queue.length-1;
-  renderQueue();
-}
-
+function addTrack(){ const inp=document.getElementById('yt-inp'); const val=inp.value.trim(); if(!val){toast('Enter a URL or track name');return;} queue.push({title:/^https?:/.test(val)?'YouTube Music track':val,artist:'YouTube Music',dur:'--:--',s:0,art:demoArt(queue.length)}); inp.value=''; renderQueue(); toast('Added to queue'); }
+function removeTrack(i,e){ e.stopPropagation(); if(queue.length<=1){toast("Can't remove the only track");return;} queue.splice(i,1); if(qIdx>=queue.length)qIdx=queue.length-1; renderQueue(); }
 function renderQueue(){
-  const fallback = `<svg width='18' height='18' viewBox='0 0 24 24' fill='var(--t3)'><path d='M12 3v10.55A4 4 0 1014 17V7h4V3h-6z'/></svg>`;
-  document.getElementById('qlist').innerHTML = queue.map((t,i)=>`
+  const fb=`<svg width='18' height='18' viewBox='0 0 24 24' fill='var(--t3)'><path d='M12 3v10.55A4 4 0 1014 17V7h4V3h-6z'/></svg>`;
+  document.getElementById('qlist').innerHTML=queue.map((t,i)=>`
 <div class="qitem${i===qIdx?' cur':''}" onclick="playQueueItem(${i})">
-  <span class="qnum">${i===qIdx&&playing
-    ? '<span class="eq"><b></b><b></b><b></b></span>'
-    : i+1}</span>
-  <div class="qthumb"><img src="${t.art}" alt="" loading="lazy" onerror="this.outerHTML='${fallback.replace(/'/g,"&apos;")}'"></div>
-  <div class="qinfo">
-    <div class="qtitle">${x(t.title)}</div>
-    <div class="qartist">${x(t.artist)}</div>
-  </div>
+  <span class="qnum">${i===qIdx&&playing?'<span class="eq"><b></b><b></b><b></b></span>':i+1}</span>
+  <div class="qthumb"><img src="${t.art}" alt="" loading="lazy" onerror="this.outerHTML='${fb.replace(/'/g,"&apos;")}'" ></div>
+  <div class="qinfo"><div class="qtitle">${x(t.title)}</div><div class="qartist">${x(t.artist)}</div></div>
   <span class="qdur">${t.dur}</span>
-  <button class="qdel" onclick="removeTrack(${i},event)" title="Remove">
-    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-  </button>
+  <button class="qdel" onclick="removeTrack(${i},event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
 </div>`).join('');
 }
+function playQueueItem(i){ if(!curGroupId){toast('Select a room first');return;} qIdx=i; renderQueue(); toast('Playing: '+queue[i].title); }
 
-function playQueueItem(i){
-  // For now just update local state — full queue sync via Sonos API requires playlist management
-  if(!curGroupId){ toast('Select a room first'); return; }
-  qIdx = i;
-  renderQueue();
-  toast('Playing: ' + queue[i].title);
-}
+/* ━━━━ SETTINGS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function refreshRooms(){ if(!accessToken){toast('Not connected');return;} try{ await refreshGroups(); toast('Rooms updated'); }catch(e){ toast('Failed: '+e.message); } }
+function signOut(){ accessToken=refreshToken=householdId=null; tokenExpiry=0; groups=[]; curGroupId=null; playing=false; clearInterval(progTimer); clearInterval(pollTimer); ['sonos_access_token','sonos_refresh_token','sonos_token_expiry','sonos_household_id'].forEach(k=>LS.removeItem(k)); setDot(''); setLbl('Not connected'); setBanner('info','Signed out'); syncPlayIcon(); renderRooms(); closeModal(); toast('Signed out'); }
+function openSettings(){ document.getElementById('modal').classList.add('open'); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+function onModalBg(e){ if(e.target===document.getElementById('modal'))closeModal(); }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SETTINGS ACTIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-async function refreshRooms(){
-  if(!accessToken){ toast('Not connected'); return; }
-  toast('Refreshing rooms…');
-  try {
-    await refreshGroupsOnly();
-    toast('Rooms updated');
-  } catch(e){
-    toast('Refresh failed: ' + e.message);
-  }
-}
-
-function saveManualToken(){
-  const tok = document.getElementById('manual-token').value.trim();
-  const hh  = document.getElementById('manual-household').value.trim();
-  if(!tok){ toast('Paste an access token first'); return; }
-  accessToken = tok;
-  tokenExpiry = Date.now() + 3600*1000; // assume 1h
-  LS.setItem('sonos_access_token', tok);
-  LS.setItem('sonos_token_expiry', tokenExpiry.toString());
-  if(hh){ householdId = hh; LS.setItem('sonos_household_id', hh); }
-  closeModal('settings-modal');
-  showLoader('Loading your Sonos system…');
-  loadSystem().catch(e=>{ hideLoader(); toast('Failed: '+e.message); });
-}
-
-function signOut(){
-  accessToken = refreshToken = householdId = null;
-  tokenExpiry = 0;
-  groups = []; curGroupId = null; playing = false;
-  clearInterval(progTimer); clearInterval(pollTimer);
-  ['sonos_access_token','sonos_refresh_token','sonos_token_expiry','sonos_household_id'].forEach(k=>LS.removeItem(k));
-  setDot(''); setConnLabel('Not connected');
-  setBanner('info', 'Signed out');
-  syncPlayIcon(); renderRooms(); renderQueue();
-  closeModal('settings-modal');
-  toast('Signed out');
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   MODAL / TOAST
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-function openSettings(){ document.getElementById('settings-modal').classList.add('open'); }
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-function onModalBg(e, id){ if(e.target===document.getElementById(id)) closeModal(id); }
-
-function toast(msg){
-  const el = document.getElementById('toast-el');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>el.classList.remove('show'), 2500);
-}
+/* ━━━━ TOAST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function toast(msg){ const el=document.getElementById('toast-el'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2500); }
 </script>
 </body>
 </html>
