@@ -98,7 +98,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 .msheet{background:var(--s1);border-radius:22px 22px 0 0;padding:24px 20px calc(env(safe-area-inset-bottom,0px)+30px);width:100%;max-width:430px;border-top:1px solid var(--border);transform:translateY(20px);transition:transform 0.25s;max-height:90vh;overflow-y:auto}
 .modal.open .msheet{transform:translateY(0)}
 .mhandle{width:36px;height:4px;background:var(--s3);border-radius:2px;margin:0 auto 20px}
-.mtitle{font-size:17px;font-weight:700;margin-bottom:6px}
+.mtitle{font-size:17px;font-weight:700;margin-bottom:14px}
 .mlabel{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;margin-top:12px;display:block}
 .mfield{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--t1);font-family:var(--font);outline:none;margin-bottom:4px;transition:border-color 0.2s}
 .mfield:focus{border-color:var(--red)}.mfield::placeholder{color:var(--t3)}
@@ -251,10 +251,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
       <div class="mstep-num">1</div>
       <div>
         <div class="mstep-title">Cloudflare Worker URL</div>
-        <div class="mstep-desc" style="margin-bottom:8px">
-          Paste the URL of your deployed Cloudflare Worker proxy.
-          The worker handles the token exchange securely server-side.
-        </div>
+        <div class="mstep-desc" style="margin-bottom:8px">Your worker proxies all Sonos API calls, solving CORS.</div>
         <span class="mlabel" style="margin-top:0">Worker URL</span>
         <input class="mfield" id="proxy-url" placeholder="https://sonos-proxy.yourname.workers.dev" autocomplete="off" spellcheck="false">
       </div>
@@ -265,8 +262,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
       <div>
         <div class="mstep-title">Sonos Client ID</div>
         <div class="mstep-desc" style="margin-bottom:8px">
-          From your integration at <a href="https://developer.sonos.com" target="_blank">developer.sonos.com</a>.
-          Set your redirect URI to:<br>
+          From <a href="https://developer.sonos.com" target="_blank">developer.sonos.com</a>.
+          Redirect URI must be set to:<br>
           <code id="redirect-display" style="word-break:break-all;display:block;margin-top:6px">—</code>
         </div>
         <span class="mlabel" style="margin-top:0">Client ID</span>
@@ -287,7 +284,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     </div>
 
     <div class="mdivider"></div>
-
     <div class="mrow">
       <button class="mbtn mbtn-secondary" onclick="refreshRooms()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
@@ -307,8 +303,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 'use strict';
 
 /* ── CONSTANTS ── */
-const SONOS_AUTH = 'https://api.sonos.com/login/v3/oauth';
-const SONOS_API  = 'https://api.ws.sonos.com/control/api/v1';
+const SONOS_AUTH  = 'https://api.sonos.com/login/v3/oauth';
 const REDIRECT_URI = window.location.href.split('?')[0].split('#')[0];
 
 /* ── STATE ── */
@@ -349,6 +344,30 @@ function showLoader(t) { const el=document.getElementById('loader'); el.classLis
 function hideLoader() { document.getElementById('loader').classList.add('gone'); }
 function setBanner(type, text) { const b=document.getElementById('banner'); b.className='banner '+type; document.getElementById('banner-text').textContent=text; }
 
+/* ── ALL SONOS API CALLS GO THROUGH THE WORKER ──
+   GET  /api/v1/...  →  worker /api/v1/...  →  api.ws.sonos.com/control/api/v1/...
+   POST /api/v1/...  →  worker /api/v1/...  →  api.ws.sonos.com/control/api/v1/...
+*/
+async function sonosGet(path) {
+  await ensureFreshToken();
+  const res = await fetch(`${proxyUrl}/api${path}`, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+  if (!res.ok) throw new Error(`GET ${path} → ${res.status}`);
+  return res.json();
+}
+
+async function sonosPost(path, body = {}) {
+  await ensureFreshToken();
+  const res = await fetch(`${proxyUrl}/api${path}`, {
+    method:  'POST',
+    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  });
+  if (!res.ok) console.warn(`POST ${path} → ${res.status}`);
+  return res;
+}
+
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('redirect-display').textContent = REDIRECT_URI;
@@ -360,10 +379,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   householdId  = LS.getItem('sonos_hh')    || null;
 
   if (proxyUrl) document.getElementById('proxy-url').value = proxyUrl;
-  const savedClientId = LS.getItem('sonos_client_id');
-  if (savedClientId)  document.getElementById('client-id').value = savedClientId;
+  const savedId = LS.getItem('sonos_client_id');
+  if (savedId)  document.getElementById('client-id').value = savedId;
 
-  // Handle OAuth callback — Sonos redirects back with ?code=
   const params = new URLSearchParams(window.location.search);
   if (params.has('code')) {
     history.replaceState({}, '', REDIRECT_URI);
@@ -390,14 +408,11 @@ function startOAuth() {
   const proxy    = document.getElementById('proxy-url').value.trim().replace(/\/+$/, '');
   if (!proxy)    { toast('Enter your Worker URL first');  return; }
   if (!clientId) { toast('Enter your Client ID first');   return; }
-
   LS.setItem('sonos_proxy',     proxy);
   LS.setItem('sonos_client_id', clientId);
   proxyUrl = proxy;
-
   const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
   LS.setItem('sonos_state', state);
-
   const url = new URL(SONOS_AUTH);
   url.searchParams.set('client_id',     clientId);
   url.searchParams.set('response_type', 'code');
@@ -409,14 +424,8 @@ function startOAuth() {
 
 async function handleCallback(code) {
   proxyUrl = LS.getItem('sonos_proxy') || '';
-  if (!proxyUrl) {
-    hideLoader();
-    toast('Worker URL missing — re-enter in Settings');
-    openSettings();
-    return;
-  }
+  if (!proxyUrl) { hideLoader(); toast('Worker URL missing — re-enter in Settings'); openSettings(); return; }
   try {
-    // POST to Cloudflare Worker /token — worker exchanges code using stored Client Secret
     const res  = await fetch(`${proxyUrl}/token`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -427,8 +436,7 @@ async function handleCallback(code) {
     saveTokens(data);
     await loadSystem();
   } catch(e) {
-    hideLoader();
-    setDot('err');
+    hideLoader(); setDot('err');
     console.error('handleCallback:', e);
     setBanner('err', 'Sign in failed: ' + e.message);
     openSettings();
@@ -449,7 +457,6 @@ async function ensureFreshToken() {
   if (!refreshToken) throw new Error('No refresh token — please reconnect');
   proxyUrl = proxyUrl || LS.getItem('sonos_proxy') || '';
   if (!proxyUrl) throw new Error('No proxy URL');
-  // POST to Cloudflare Worker /refresh
   const res  = await fetch(`${proxyUrl}/refresh`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -458,27 +465,6 @@ async function ensureFreshToken() {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Token refresh failed');
   saveTokens(data);
-}
-
-/* ── SONOS API ── */
-async function sonosGet(path) {
-  await ensureFreshToken();
-  const res = await fetch(`${SONOS_API}${path}`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` }
-  });
-  if (!res.ok) throw new Error(`GET ${path} → ${res.status}`);
-  return res.json();
-}
-
-async function sonosPost(path, body = {}) {
-  await ensureFreshToken();
-  const res = await fetch(`${SONOS_API}${path}`, {
-    method:  'POST',
-    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify(body),
-  });
-  if (!res.ok) console.warn(`POST ${path} → ${res.status}`);
-  return res;
 }
 
 /* ── LOAD SYSTEM ── */
@@ -493,8 +479,7 @@ async function loadSystem() {
   }
   await loadGroups();
   hideLoader();
-  setDot('ok');
-  setLabel('Connected');
+  setDot('ok'); setLabel('Connected');
   setBanner('ok', `Connected · ${groups.length} room${groups.length !== 1 ? 's' : ''} found`);
   closeModal('settings-modal');
   startPolling();
@@ -527,8 +512,7 @@ async function pollPlayback() {
     ]);
     const nowPlaying = pb.playbackState === 'PLAYBACK_STATE_PLAYING';
     if (nowPlaying !== playing) {
-      playing = nowPlaying;
-      syncPlayIcon();
+      playing = nowPlaying; syncPlayIcon();
       if (playing && !progTimer) startProg();
       else if (!playing) { clearInterval(progTimer); progTimer = null; }
     }
@@ -552,8 +536,7 @@ async function pollPlayback() {
       updateProg();
     }
     if (pb.playModes) {
-      shuffle    = !!pb.playModes.shuffle;
-      repeatMode = !!pb.playModes.repeat;
+      shuffle = !!pb.playModes.shuffle; repeatMode = !!pb.playModes.repeat;
       document.getElementById('shuf-btn').classList.toggle('lit', shuffle);
       document.getElementById('rep-btn').classList.toggle('lit', repeatMode);
     }
@@ -567,34 +550,27 @@ function selectRoom(id) {
   const g = groups.find(g => g.id === id);
   document.getElementById('np-room').textContent = g?.name || id;
   if (g) { document.getElementById('mvol').value = g.vol; document.getElementById('mvol-val').textContent = g.vol; }
-  renderRooms();
-  pollPlayback();
+  renderRooms(); pollPlayback();
   toast('Room: ' + (g?.name || id));
 }
 function toggleGroup(i, e) {
-  e.stopPropagation();
-  groups[i].grouped = !groups[i].grouped;
-  renderRooms();
+  e.stopPropagation(); groups[i].grouped = !groups[i].grouped; renderRooms();
   toast(groups[i].name + (groups[i].grouped ? ' grouped' : ' ungrouped'));
 }
 async function groupAll() {
   if (!curGroupId) { toast('Select a room first'); return; }
-  groups.filter(g => g.id !== curGroupId).forEach(g => g.grouped = true);
-  renderRooms();
+  groups.filter(g => g.id !== curGroupId).forEach(g => g.grouped = true); renderRooms();
   for (const g of groups.filter(g => g.id !== curGroupId)) {
     try { await sonosPost(`/groups/${curGroupId}/groups/modifyGroupMembers`, { playerIdsToAdd: g.playerIds }); } catch(e) { console.warn(e); }
   }
-  toast('All rooms grouped');
-  setTimeout(loadGroups, 2000);
+  toast('All rooms grouped'); setTimeout(loadGroups, 2000);
 }
 async function ungroupAll() {
-  groups.forEach(g => g.grouped = false);
-  renderRooms();
+  groups.forEach(g => g.grouped = false); renderRooms();
   for (const g of groups.filter(g => g.id !== curGroupId && g.playerIds.length)) {
     try { await sonosPost(`/groups/${g.id}/groups/createGroup`, { playerIds: g.playerIds }); } catch(e) { console.warn(e); }
   }
-  toast('Rooms ungrouped');
-  setTimeout(loadGroups, 2000);
+  toast('Rooms ungrouped'); setTimeout(loadGroups, 2000);
 }
 function renderRooms() {
   const grid = document.getElementById('rooms-grid');
@@ -661,14 +637,12 @@ function seekClick(e) {
   sonosPost(`/groups/${curGroupId}/playback/seek`, { positionMillis: curSec * 1000 });
 }
 async function toggleShuffle() {
-  shuffle = !shuffle;
-  document.getElementById('shuf-btn').classList.toggle('lit', shuffle);
+  shuffle = !shuffle; document.getElementById('shuf-btn').classList.toggle('lit', shuffle);
   if (curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`, { playModes: { shuffle } });
   toast('Shuffle ' + (shuffle ? 'on' : 'off'));
 }
 async function toggleRepeat() {
-  repeatMode = !repeatMode;
-  document.getElementById('rep-btn').classList.toggle('lit', repeatMode);
+  repeatMode = !repeatMode; document.getElementById('rep-btn').classList.toggle('lit', repeatMode);
   if (curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`, { playModes: { repeat: repeatMode } });
   toast('Repeat ' + (repeatMode ? 'on' : 'off'));
 }
@@ -679,8 +653,7 @@ async function onMasterVol(v) {
   await sonosPost(`/groups/${curGroupId}/groupVolume`, { volume: v });
 }
 async function onRoomVol(i, v) {
-  v = parseInt(v); groups[i].vol = v;
-  document.getElementById('rvv'+i).textContent = v;
+  v = parseInt(v); groups[i].vol = v; document.getElementById('rvv'+i).textContent = v;
   await sonosPost(`/groups/${groups[i].id}/groupVolume`, { volume: v });
 }
 
