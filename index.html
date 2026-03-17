@@ -666,21 +666,16 @@ function ytmSection(name) {
 async function loadYtmSection(name) {
   renderYtmLoading();
   try {
-    let items = [];
-    if(name === 'library') {
-      const data = await ytmCall('browse', { browseId: 'VLLM' });
-      items = parseTrackList(data);
+    let data;
+    if(name === 'library' || name === 'liked') {
+      data = await ytmCall('library', {});
     } else if(name === 'playlists') {
-      const data = await ytmCall('browse', { browseId: 'FEmusic_liked_playlists' });
-      items = parsePlaylistList(data);
-    } else if(name === 'liked') {
-      const data = await ytmCall('browse', { browseId: 'VLLM' });
-      items = parseTrackList(data);
-    } else if(name === 'history') {
-      const data = await ytmCall('browse', { browseId: 'FEmusic_history' });
-      items = parseTrackList(data);
+      data = await ytmCall('playlists', {});
+    } else {
+      data = await ytmCall('library', {});
     }
-    renderYtmList(items);
+    renderYtmList(data?.items || []);
+    if(!data?.items?.length) $('ytm-list').innerHTML = `<div class="ytm-empty">No items found</div>`;
   } catch(e) {
     $('ytm-list').innerHTML = `<div class="ytm-empty">Failed to load: ${esc(e.message)}</div>`;
   }
@@ -692,96 +687,14 @@ async function ytmSearch() {
   if(!q) return;
   renderYtmLoading();
   try {
-    const data  = await ytmCall('search', { query: q });
-    const items = parseSearchResults(data);
-    renderYtmList(items.length ? items : []);
-    if(!items.length) $('ytm-list').innerHTML = `<div class="ytm-empty">No results for "${esc(q)}"</div>`;
+    const data = await ytmCall('search', { query: q });
+    renderYtmList(data?.items || []);
+    if(!data?.items?.length) $('ytm-list').innerHTML = `<div class="ytm-empty">No results for "${esc(q)}"</div>`;
   } catch(e) {
     $('ytm-list').innerHTML = `<div class="ytm-empty">Search failed: ${esc(e.message)}</div>`;
   }
 }
 
-// ── InnerTube response parsers ──────────────────────────────
-function parseSearchResults(data) {
-  const items = [];
-  try {
-    const contents = data?.contents?.tabbedSearchResultsRenderer?.tabs?.[0]?.tabRenderer?.content
-      ?.sectionListRenderer?.contents || [];
-    for(const section of contents) {
-      const shelf = section.musicShelfRenderer;
-      if(!shelf) continue;
-      for(const item of shelf.contents || []) {
-        const r = item.musicResponsiveListItemRenderer;
-        if(!r) continue;
-        const parsed = parseResponsiveItem(r);
-        if(parsed) items.push(parsed);
-      }
-    }
-  } catch(e) { console.warn('parseSearchResults:', e); }
-  return items;
-}
-
-function parseTrackList(data) {
-  const items = [];
-  try {
-    const sections = data?.contents?.singleColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content
-      ?.sectionListRenderer?.contents || [];
-    for(const section of sections) {
-      const shelf = section.musicShelfRenderer || section.gridRenderer;
-      if(!shelf) continue;
-      for(const item of shelf.contents || []) {
-        const r = item.musicResponsiveListItemRenderer || item.musicTwoRowItemRenderer;
-        if(!r) continue;
-        const parsed = r.flexColumns ? parseResponsiveItem(r) : parseTwoRowItem(r);
-        if(parsed) items.push(parsed);
-      }
-    }
-  } catch(e) { console.warn('parseTrackList:', e); }
-  return items;
-}
-
-function parsePlaylistList(data) {
-  const items = [];
-  try {
-    const sections = data?.contents?.singleColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content
-      ?.sectionListRenderer?.contents || [];
-    for(const section of sections) {
-      const grid = section.gridRenderer;
-      if(!grid) continue;
-      for(const item of grid.contents || []) {
-        const r = item.musicTwoRowItemRenderer;
-        if(!r) continue;
-        const parsed = parseTwoRowItem(r);
-        if(parsed) items.push(parsed);
-      }
-    }
-  } catch(e) { console.warn('parsePlaylistList:', e); }
-  return items;
-}
-
-function parseResponsiveItem(r) {
-  try {
-    const title    = r.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text;
-    const artist   = r.flexColumns?.[1]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text;
-    const thumb    = r.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.slice(-1)[0]?.url;
-    const videoId  = r.playlistItemData?.videoId || r.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.navigationEndpoint?.watchEndpoint?.videoId;
-    const playlistId = r.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.navigationEndpoint?.watchEndpoint?.playlistId;
-    if(!title) return null;
-    return { type: videoId ? 'song' : 'playlist', id: videoId || playlistId, title, subtitle: artist||'', thumb: thumb||null };
-  } catch(e) { return null; }
-}
-
-function parseTwoRowItem(r) {
-  try {
-    const title    = r.title?.runs?.[0]?.text;
-    const subtitle = r.subtitle?.runs?.map(x=>x.text).join('');
-    const thumb    = r.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails?.slice(-1)[0]?.url;
-    const videoId  = r.navigationEndpoint?.watchEndpoint?.videoId;
-    const playlistId = r.navigationEndpoint?.browseEndpoint?.browseId || r.navigationEndpoint?.watchEndpoint?.playlistId;
-    if(!title) return null;
-    return { type: videoId ? 'song' : 'playlist', id: videoId || playlistId, title, subtitle: subtitle||'', thumb: thumb||null };
-  } catch(e) { return null; }
-}
 
 function renderYtmLoading() {
   $('ytm-list').innerHTML = `<div class="ytm-empty"><div class="spinner-sm" style="margin:0 auto 8px"></div>Loading…</div>`;
