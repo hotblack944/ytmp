@@ -13,7 +13,7 @@
   --bg:#0a0a0f;--s1:#13131a;--s2:#1c1c26;--s3:#252533;
   --red:#ff0033;--red2:#ff4d6d;--red-glow:rgba(255,0,51,0.3);
   --blue:#3a6aff;--blue-dim:rgba(58,106,255,0.15);--blue-t:#7096ff;
-  --green:#2ec27e;--amber:#f0a500;
+  --green:#2ec27e;--amber:#f0a500;--ytred:#ff0000;
   --t1:#f0f0f5;--t2:#9090a8;--t3:#5a5a70;
   --border:#2a2a3a;--r:14px;
   --font:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
@@ -22,6 +22,8 @@
 html,body{height:100%;overflow:hidden;background:#000}
 body{font-family:var(--font);display:flex;justify-content:center}
 .app{width:100%;max-width:430px;height:100vh;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+
+/* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:max(env(safe-area-inset-top),16px) 20px 12px;background:rgba(10,10,15,0.97);border-bottom:1px solid var(--border);flex-shrink:0;z-index:50}
 .logo{display:flex;align-items:center;gap:9px}
 .logo-mark{width:34px;height:34px;border-radius:9px;background:var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 16px var(--red-glow)}
@@ -30,8 +32,18 @@ body{font-family:var(--font);display:flex;justify-content:center}
 .pill:hover{border-color:var(--t3)}
 .sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background 0.3s;background:var(--t3)}
 .sdot.ok{background:var(--green)}.sdot.err{background:var(--red)}.sdot.busy{background:var(--amber)}
+
+/* TABS */
+.tabs{display:flex;gap:2px;padding:10px 16px 0;flex-shrink:0}
+.tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s}
+.tab.on{color:var(--t1);border-bottom-color:var(--red)}
+
+/* SCROLL */
 .scroller{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(env(safe-area-inset-bottom,0px)+80px)}
 .scroller::-webkit-scrollbar{display:none}
+.tab-panel{display:none}.tab-panel.on{display:block}
+
+/* NOW PLAYING */
 .np{margin:14px 16px 0;border-radius:var(--r);padding:16px;position:relative;overflow:hidden;background:linear-gradient(145deg,#1a0810 0%,#0e0e1c 55%,#0d1222 100%);border:1px solid #2e1a28}
 .np::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top right,rgba(255,0,51,0.09),transparent 60%);pointer-events:none}
 .np-top{display:flex;align-items:center;gap:13px;margin-bottom:14px}
@@ -55,7 +67,11 @@ body{font-family:var(--font);display:flex;justify-content:center}
 input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:3px;border-radius:2px;background:var(--s3);outline:none;cursor:pointer}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--t1);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.5)}
 .vol-val{font-size:11px;color:var(--t3);min-width:28px;text-align:right;font-family:var(--mono)}
+
+/* SECTION */
 .slabel{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--t3);text-transform:uppercase;margin:20px 16px 10px;display:block}
+
+/* ROOMS */
 .group-bar{display:flex;align-items:center;justify-content:space-between;margin:0 16px 10px;padding:9px 14px;background:var(--s1);border:1px solid var(--border);border-radius:10px}
 .group-bar-txt{font-size:12px;color:var(--t2)}
 .group-btns{display:flex;gap:6px}
@@ -72,27 +88,49 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 .rvol-val{font-size:10px;color:var(--t3);min-width:24px;text-align:right;font-family:var(--mono)}
 .rbadge{position:absolute;top:9px;right:9px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;text-transform:uppercase;letter-spacing:0.04em;pointer-events:none}
 .rb-play{background:rgba(255,0,51,0.15);color:var(--red2)}.rb-grp{background:var(--blue-dim);color:var(--blue-t)}
-.add-row{display:flex;gap:9px;margin:0 16px 8px}
-.yt-inp{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--t1);font-family:var(--font);outline:none;transition:border-color 0.2s;min-width:0}
-.yt-inp:focus{border-color:#ff0000}.yt-inp::placeholder{color:var(--t3)}
-.add-btn{background:#ff0000;border:none;border-radius:10px;padding:11px 15px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap;font-family:var(--font);display:flex;align-items:center;gap:5px;flex-shrink:0;transition:opacity 0.15s,transform 0.1s}
-.add-btn:active{opacity:0.85;transform:scale(0.96)}.add-btn svg{width:14px;height:14px;fill:#fff}
-.qlist{display:flex;flex-direction:column;gap:1px;margin:0 10px}
-.qitem{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;cursor:pointer;transition:background 0.12s}
-.qitem:hover{background:var(--s2)}.qitem.cur{background:var(--s2)}
-.qnum{font-size:12px;color:var(--t3);min-width:20px;text-align:center;font-family:var(--mono);flex-shrink:0}
-.qthumb{width:42px;height:42px;border-radius:7px;background:var(--s3);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.qthumb img{width:100%;height:100%;object-fit:cover;display:block}
-.qinfo{flex:1;min-width:0}
-.qtitle{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qartist{font-size:11px;color:var(--t2);margin-top:2px}
-.qdur{font-size:11px;color:var(--t3);font-family:var(--mono);flex-shrink:0}
-.qdel{background:none;border:none;color:var(--t3);cursor:pointer;padding:4px;border-radius:6px;display:flex;transition:color 0.15s,opacity 0.15s;opacity:0;flex-shrink:0}
-.qitem:hover .qdel{opacity:1}.qdel:hover{color:var(--red)}.qdel svg{width:14px;height:14px;fill:currentColor}
-.bnav{display:flex;justify-content:space-around;padding:10px 0 calc(env(safe-area-inset-bottom,0px)+10px);border-top:1px solid var(--border);background:rgba(10,10,15,0.97);flex-shrink:0;z-index:10}
-.nitem{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 18px;border-radius:10px;transition:color 0.15s;color:var(--t3)}
-.nitem:hover{color:var(--t2)}.nitem.on{color:var(--red)}
-.nitem svg{width:22px;height:22px;fill:currentColor}.nlbl{font-size:10px;font-weight:600;letter-spacing:0.02em}
+
+/* YOUTUBE MUSIC */
+.ytm-header{display:flex;align-items:center;justify-content:space-between;margin:14px 16px 10px}
+.ytm-status{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)}
+.ytm-dot{width:7px;height:7px;border-radius:50%;background:var(--t3);flex-shrink:0}
+.ytm-dot.ok{background:var(--green)}.ytm-dot.busy{background:var(--amber)}
+.ytm-connect-btn{font-size:12px;background:var(--ytred);border:none;border-radius:8px;padding:6px 14px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600}
+.search-row{display:flex;gap:9px;margin:0 16px 12px}
+.search-inp{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--t1);font-family:var(--font);outline:none;transition:border-color 0.2s;min-width:0}
+.search-inp:focus{border-color:var(--ytred)}.search-inp::placeholder{color:var(--t3)}
+.search-btn{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;color:var(--t2);transition:color 0.15s,border-color 0.15s}
+.search-btn:hover{color:var(--t1);border-color:var(--t3)}
+.search-btn svg{width:16px;height:16px;fill:currentColor}
+.ytm-sections{display:flex;gap:8px;margin:0 16px 12px;overflow-x:auto;padding-bottom:2px}
+.ytm-sections::-webkit-scrollbar{display:none}
+.ytm-sec-btn{flex-shrink:0;font-size:12px;font-weight:600;background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;color:var(--t2);font-family:var(--font);white-space:nowrap;transition:all 0.15s}
+.ytm-sec-btn:hover{border-color:var(--ytred);color:var(--t1)}
+.ytm-sec-btn.on{background:var(--ytred);border-color:var(--ytred);color:#fff}
+.ytm-list{display:flex;flex-direction:column;gap:1px;margin:0 10px}
+.ytm-item{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;cursor:pointer;transition:background 0.12s}
+.ytm-item:hover{background:var(--s2)}
+.ytm-thumb{width:46px;height:46px;border-radius:7px;background:var(--s3);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.ytm-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ytm-thumb.sq{border-radius:4px}
+.ytm-info{flex:1;min-width:0}
+.ytm-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ytm-sub{font-size:11px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ytm-play-btn{background:none;border:none;color:var(--t3);cursor:pointer;padding:6px;border-radius:8px;display:flex;flex-shrink:0;transition:color 0.15s}
+.ytm-play-btn:hover{color:var(--red)}
+.ytm-play-btn svg{width:18px;height:18px;fill:currentColor}
+.ytm-empty{padding:32px 16px;text-align:center;color:var(--t3);font-size:13px;line-height:1.7}
+
+/* AUTH SHEET */
+.auth-sheet{margin:14px 16px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.auth-sheet-title{font-size:15px;font-weight:600;margin-bottom:8px}
+.auth-sheet-desc{font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:16px}
+.auth-code-box{background:var(--s3);border-radius:10px;padding:14px;text-align:center;margin-bottom:16px}
+.auth-code{font-size:28px;font-weight:700;letter-spacing:0.12em;color:var(--t1);font-family:var(--mono)}
+.auth-url{font-size:12px;color:var(--blue-t);margin-top:6px}
+.auth-waiting{font-size:12px;color:var(--t3);display:flex;align-items:center;gap:6px;justify-content:center;margin-top:8px}
+.auth-sheet-btn{width:100%;background:var(--ytred);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--font);margin-top:4px}
+
+/* MODAL */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s}
 .modal.open{opacity:1;pointer-events:all}
 .msheet{background:var(--s1);border-radius:22px 22px 0 0;padding:24px 20px calc(env(safe-area-inset-bottom,0px)+30px);width:100%;max-width:430px;border-top:1px solid var(--border);transform:translateY(20px);transition:transform 0.25s;max-height:90vh;overflow-y:auto}
@@ -119,12 +157,24 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 .banner.ok{background:rgba(46,194,126,0.1);border:1px solid rgba(46,194,126,0.3);color:var(--green)}
 .banner.err{background:rgba(255,0,51,0.1);border:1px solid rgba(255,0,51,0.3);color:var(--red2)}
 .banner.info{background:var(--s2);border:1px solid var(--border);color:var(--t2)}
+
+/* BNAV */
+.bnav{display:flex;justify-content:space-around;padding:10px 0 calc(env(safe-area-inset-bottom,0px)+10px);border-top:1px solid var(--border);background:rgba(10,10,15,0.97);flex-shrink:0;z-index:10}
+.nitem{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 18px;border-radius:10px;transition:color 0.15s;color:var(--t3)}
+.nitem:hover{color:var(--t2)}.nitem.on{color:var(--red)}
+.nitem svg{width:22px;height:22px;fill:currentColor}.nlbl{font-size:10px;font-weight:600;letter-spacing:0.02em}
+
+/* LOADING */
 .loading-overlay{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:100;transition:opacity 0.4s}
 .loading-overlay.gone{opacity:0;pointer-events:none}
 .spinner{width:36px;height:36px;border:3px solid var(--s3);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite}
 .loading-text{font-size:14px;color:var(--t2)}
+.spinner-sm{width:14px;height:14px;border:2px solid var(--s3);border-top-color:var(--t2);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+
+/* TOAST */
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(6px);background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--t1);z-index:999;opacity:0;transition:opacity 0.2s,transform 0.2s;pointer-events:none;white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .pulse{animation:pulse 1.4s ease-in-out infinite}
@@ -146,6 +196,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     <div class="loading-text" id="loader-text">Starting…</div>
   </div>
 
+  <!-- TOPBAR -->
   <div class="topbar">
     <div class="logo">
       <div class="logo-mark">
@@ -162,127 +213,179 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     </div>
   </div>
 
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab on" id="tab-player" onclick="switchTab('player')">Player</div>
+    <div class="tab" id="tab-ytm" onclick="switchTab('ytm')">YouTube Music</div>
+  </div>
+
   <div class="scroller">
-    <div class="np">
-      <div class="np-top">
-        <div class="np-art" id="np-art">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="var(--t3)"><path d="M12 3v10.55A4 4 0 1014 17V7h4V3h-6z"/></svg>
-        </div>
-        <div class="np-meta">
-          <div class="np-title" id="np-title">Nothing playing</div>
-          <div class="np-artist" id="np-artist">—</div>
-          <div class="np-room">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--red2)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>
-            <span id="np-room">Select a room</span>
+
+    <!-- ══ PLAYER TAB ══ -->
+    <div class="tab-panel on" id="panel-player">
+      <div class="np">
+        <div class="np-top">
+          <div class="np-art" id="np-art">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="var(--t3)"><path d="M12 3v10.55A4 4 0 1014 17V7h4V3h-6z"/></svg>
+          </div>
+          <div class="np-meta">
+            <div class="np-title" id="np-title">Nothing playing</div>
+            <div class="np-artist" id="np-artist">—</div>
+            <div class="np-room">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--red2)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>
+              <span id="np-room">Select a room</span>
+            </div>
           </div>
         </div>
+        <div class="prog-bar" id="prog-bar" onclick="seekClick(event)">
+          <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+        </div>
+        <div class="prog-times"><span id="t-cur">0:00</span><span id="t-tot">0:00</span></div>
+        <div class="ctrls">
+          <button class="cbtn" id="shuf-btn" onclick="toggleShuffle()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+          </button>
+          <button class="cbtn" onclick="prevTrack()">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          </button>
+          <button class="pbtn" onclick="togglePlay()">
+            <svg id="pico" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button class="cbtn" onclick="nextTrack()">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
+          <button class="cbtn" id="rep-btn" onclick="toggleRepeat()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+          </button>
+        </div>
+        <div class="vol-row">
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+          <input type="range" id="mvol" min="0" max="100" value="50" step="1" oninput="onMasterVol(this.value)">
+          <span class="vol-val" id="mvol-val">50</span>
+        </div>
       </div>
-      <div class="prog-bar" id="prog-bar" onclick="seekClick(event)">
-        <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+
+      <span class="slabel">Rooms</span>
+      <div class="group-bar">
+        <span class="group-bar-txt">Group speakers</span>
+        <div class="group-btns">
+          <button class="gbtn" onclick="groupAll()">Group all</button>
+          <button class="gbtn" onclick="ungroupAll()">Ungroup</button>
+        </div>
       </div>
-      <div class="prog-times"><span id="t-cur">0:00</span><span id="t-tot">0:00</span></div>
-      <div class="ctrls">
-        <button class="cbtn" id="shuf-btn" onclick="toggleShuffle()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
-        </button>
-        <button class="cbtn" onclick="prevTrack()">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-        </button>
-        <button class="pbtn" onclick="togglePlay()">
-          <svg id="pico" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </button>
-        <button class="cbtn" onclick="nextTrack()">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-        </button>
-        <button class="cbtn" id="rep-btn" onclick="toggleRepeat()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
-        </button>
+      <div class="rooms-grid" id="rooms-grid">
+        <div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--t3);font-size:13px">Connect your Sonos account to see rooms</div>
       </div>
-      <div class="vol-row">
-        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-        <input type="range" id="mvol" min="0" max="100" value="50" step="1" oninput="onMasterVol(this.value)">
-        <span class="vol-val" id="mvol-val">50</span>
-      </div>
+      <div style="height:20px"></div>
     </div>
 
-    <span class="slabel">Rooms</span>
-    <div class="group-bar">
-      <span class="group-bar-txt">Group speakers</span>
-      <div class="group-btns">
-        <button class="gbtn" onclick="groupAll()">Group all</button>
-        <button class="gbtn" onclick="ungroupAll()">Ungroup</button>
+    <!-- ══ YOUTUBE MUSIC TAB ══ -->
+    <div class="tab-panel" id="panel-ytm">
+
+      <!-- Auth header -->
+      <div class="ytm-header">
+        <div class="ytm-status">
+          <div class="ytm-dot" id="ytm-dot"></div>
+          <span id="ytm-lbl">Not connected</span>
+        </div>
+        <button class="ytm-connect-btn" id="ytm-conn-btn" onclick="ytmConnect()">Connect</button>
       </div>
-    </div>
-    <div class="rooms-grid" id="rooms-grid">
-      <div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--t3);font-size:13px">Connect your Sonos account to see rooms</div>
+
+      <!-- Auth flow sheet (shown when connecting) -->
+      <div class="auth-sheet" id="auth-sheet" style="display:none">
+        <div class="auth-sheet-title">Connect YouTube Music</div>
+        <div class="auth-sheet-desc">
+          On any device, go to the URL below and enter this code to link your Google account:
+        </div>
+        <div class="auth-code-box">
+          <div class="auth-code" id="auth-code">······</div>
+          <div class="auth-url" id="auth-url">tv.youtube.com/activate</div>
+        </div>
+        <div class="auth-waiting">
+          <div class="spinner-sm"></div>
+          <span>Waiting for you to sign in…</span>
+        </div>
+        <button class="auth-sheet-btn" style="background:var(--s3);color:var(--t2);margin-top:14px" onclick="ytmCancelAuth()">Cancel</button>
+      </div>
+
+      <!-- Section pills -->
+      <div class="ytm-sections" id="ytm-sections" style="display:none">
+        <button class="ytm-sec-btn on" onclick="ytmSection('search')">Search</button>
+        <button class="ytm-sec-btn" onclick="ytmSection('library')">Library</button>
+        <button class="ytm-sec-btn" onclick="ytmSection('playlists')">Playlists</button>
+        <button class="ytm-sec-btn" onclick="ytmSection('liked')">Liked songs</button>
+        <button class="ytm-sec-btn" onclick="ytmSection('history')">History</button>
+      </div>
+
+      <!-- Search row -->
+      <div class="search-row" id="ytm-search-row" style="display:none">
+        <input class="search-inp" id="ytm-search" placeholder="Search YouTube Music…" onkeydown="if(event.key==='Enter')ytmSearch()">
+        <button class="search-btn" onclick="ytmSearch()">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </button>
+      </div>
+
+      <!-- Results -->
+      <div class="ytm-list" id="ytm-list">
+        <div class="ytm-empty">Connect YouTube Music to browse your library and search for tracks to play on Sonos.</div>
+      </div>
+      <div style="height:20px"></div>
     </div>
 
-    <span class="slabel">Queue</span>
-    <div class="add-row">
-      <input class="yt-inp" id="yt-inp" placeholder="YouTube Music URL or track name…" onkeydown="if(event.key==='Enter')addTrack()">
-      <button class="add-btn" onclick="addTrack()">
-        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Add
-      </button>
-    </div>
-    <div class="qlist" id="qlist"></div>
-    <div style="height:20px"></div>
-  </div>
+  </div><!-- /scroller -->
 
+  <!-- BOTTOM NAV -->
   <div class="bnav">
-    <div class="nitem on"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="nlbl">Home</span></div>
-    <div class="nitem" onclick="toast('Search coming soon')"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span class="nlbl">Search</span></div>
-    <div class="nitem" onclick="toast('Library coming soon')"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 5h-3v5.5a2.5 2.5 0 01-5 0 2.5 2.5 0 012.5-2.5c.57 0 1.08.19 1.5.5V5h4v2zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg><span class="nlbl">Library</span></div>
+    <div class="nitem on" onclick="switchTab('player')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="nlbl">Player</span></div>
+    <div class="nitem" onclick="switchTab('ytm')">
+      <svg viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>
+      <span class="nlbl">YouTube</span>
+    </div>
     <div class="nitem" onclick="openSettings()"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.4-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.04.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg><span class="nlbl">Settings</span></div>
   </div>
-</div>
+
+</div><!-- /app -->
 
 <!-- SETTINGS MODAL -->
 <div class="modal" id="settings-modal" onclick="onModalBg(event,'settings-modal')">
   <div class="msheet">
     <div class="mhandle"></div>
     <div class="mtitle">Connect to Sonos</div>
-
     <div class="banner info" id="banner">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
       <span id="banner-text">Not connected</span>
     </div>
-
     <div class="mstep">
       <div class="mstep-num">1</div>
       <div>
         <div class="mstep-title">Cloudflare Worker URL</div>
-        <div class="mstep-desc" style="margin-bottom:8px">Your worker proxies all Sonos API calls, solving CORS.</div>
+        <div class="mstep-desc" style="margin-bottom:8px">Your worker proxies both Sonos and YouTube Music API calls.</div>
         <span class="mlabel" style="margin-top:0">Worker URL</span>
         <input class="mfield" id="proxy-url" placeholder="https://sonos-proxy.yourname.workers.dev" autocomplete="off" spellcheck="false">
       </div>
     </div>
-
     <div class="mstep">
       <div class="mstep-num">2</div>
       <div>
         <div class="mstep-title">Sonos Client ID</div>
         <div class="mstep-desc" style="margin-bottom:8px">
-          From <a href="https://developer.sonos.com" target="_blank">developer.sonos.com</a>.
-          Redirect URI must be set to:<br>
+          From <a href="https://developer.sonos.com" target="_blank">developer.sonos.com</a>. Redirect URI:<br>
           <code id="redirect-display" style="word-break:break-all;display:block;margin-top:6px">—</code>
         </div>
         <span class="mlabel" style="margin-top:0">Client ID</span>
         <input class="mfield" id="client-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false">
       </div>
     </div>
-
     <div class="mstep">
       <div class="mstep-num">3</div>
       <div style="width:100%">
         <div class="mstep-title">Sign in with Sonos</div>
-        <div class="mstep-desc">Your Client Secret stays in the Worker — never in the browser.</div>
         <button class="mbtn mbtn-blue" onclick="startOAuth()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
           Connect with Sonos
         </button>
       </div>
     </div>
-
     <div class="mdivider"></div>
     <div class="mrow">
       <button class="mbtn mbtn-secondary" onclick="refreshRooms()">
@@ -299,119 +402,338 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 
 <div class="toast" id="toast-el"></div>
 
-<script>
-'use strict';
+<script type="module">
+// ── Import libmuse from esm.sh ──────────────────────────────
+import * as muse from 'https://esm.sh/libmuse@0.1.2';
 
-/* ── CONSTANTS ── */
+// ── CONSTANTS ───────────────────────────────────────────────
 const SONOS_AUTH  = 'https://api.sonos.com/login/v3/oauth';
 const REDIRECT_URI = window.location.href.split('?')[0].split('#')[0];
+const LS           = localStorage;
 
-/* ── STATE ── */
-let accessToken  = null;
-let refreshToken = null;
-let tokenExpiry  = 0;
-let householdId  = null;
-let proxyUrl     = '';
-let groups       = [];
-let curGroupId   = null;
-let playing      = false;
-let shuffle      = false;
-let repeatMode   = false;
-let curSec       = 0;
-let totSec       = 0;
-let progTimer    = null;
-let pollTimer    = null;
-let toastTimer   = null;
-let queue        = [];
-let qIdx         = 0;
-const LS         = localStorage;
+// ── STATE ────────────────────────────────────────────────────
+let accessToken  = null, refreshToken = null, tokenExpiry = 0;
+let householdId  = null, proxyUrl = '';
+let groups       = [], curGroupId = null;
+let playing      = false, shuffle = false, repeatMode = false;
+let curSec       = 0, totSec = 0;
+let progTimer    = null, pollTimer = null, toastTimer = null;
+let ytmReady     = false, ytmSection_ = 'search', ytmPollTimer = null;
 
-/* ── HELPERS ── */
-function makeArt(bg, sym) {
-  return 'data:image/svg+xml,' + encodeURIComponent(
-    `<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84'><rect width='84' height='84' fill='${bg}'/><text x='42' y='54' text-anchor='middle' font-size='32' font-family='serif' fill='rgba(255,255,255,0.85)'>${sym}</text></svg>`
-  );
-}
-const ARTS = ['#8B0000','#2c3e6b','#1a4a2e','#6b2d0e','#4a1a5e','#0e3d4a','#3d2b1a','#1a3a1a'];
-const SYMS = ['♪','♫','♩','♬'];
-const demoArt = i => makeArt(ARTS[i % 8], SYMS[i % 4]);
-const fmt = s => { s = Math.max(0, Math.floor(s)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); };
-const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── HELPERS ──────────────────────────────────────────────────
+const fmt  = s => { s=Math.max(0,Math.floor(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+const esc  = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const $    = id => document.getElementById(id);
+const setDot   = cls => { $('sdot').className = 'sdot'+(cls?' '+cls:''); };
+const setLabel = t   => { $('conn-lbl').textContent = t; };
+const showLoader = t => { $('loader').classList.remove('gone'); if(t) $('loader-text').textContent=t; };
+const hideLoader = () => $('loader').classList.add('gone');
+const setBanner  = (type,text) => { $('banner').className='banner '+type; $('banner-text').textContent=text; };
 
-function setDot(cls) { document.getElementById('sdot').className = 'sdot' + (cls ? ' '+cls : ''); }
-function setLabel(t) { document.getElementById('conn-lbl').textContent = t; }
-function showLoader(t) { const el=document.getElementById('loader'); el.classList.remove('gone'); if(t) document.getElementById('loader-text').textContent=t; }
-function hideLoader() { document.getElementById('loader').classList.add('gone'); }
-function setBanner(type, text) { const b=document.getElementById('banner'); b.className='banner '+type; document.getElementById('banner-text').textContent=text; }
-
-/* ── ALL SONOS API CALLS GO THROUGH THE WORKER ──
-   GET  /api/v1/...  →  worker /api/v1/...  →  api.ws.sonos.com/control/api/v1/...
-   POST /api/v1/...  →  worker /api/v1/...  →  api.ws.sonos.com/control/api/v1/...
-*/
-async function sonosGet(path) {
-  await ensureFreshToken();
-  const res = await fetch(`${proxyUrl}/api${path}`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` }
+// ── TAB SWITCHING ────────────────────────────────────────────
+window.switchTab = name => {
+  ['player','ytm'].forEach(t => {
+    $('tab-'+t).classList.toggle('on', t===name);
+    $('panel-'+t).classList.toggle('on', t===name);
   });
-  if (!res.ok) throw new Error(`GET ${path} → ${res.status}`);
-  return res.json();
-}
+  const navItems = document.querySelectorAll('.nitem');
+  navItems[0].classList.toggle('on', name==='player');
+  navItems[1].classList.toggle('on', name==='ytm');
+};
 
-async function sonosPost(path, body = {}) {
-  await ensureFreshToken();
-  const res = await fetch(`${proxyUrl}/api${path}`, {
-    method:  'POST',
-    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify(body),
-  });
-  if (!res.ok) console.warn(`POST ${path} → ${res.status}`);
-  return res;
-}
-
-/* ── INIT ── */
+// ── INIT ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  document.getElementById('redirect-display').textContent = REDIRECT_URI;
+  $('redirect-display').textContent = REDIRECT_URI;
+  proxyUrl    = LS.getItem('sonos_proxy') || '';
+  accessToken = LS.getItem('sonos_at')    || null;
+  refreshToken= LS.getItem('sonos_rt')    || null;
+  tokenExpiry = parseInt(LS.getItem('sonos_exp')||'0');
+  householdId = LS.getItem('sonos_hh')    || null;
 
-  proxyUrl     = LS.getItem('sonos_proxy') || '';
-  accessToken  = LS.getItem('sonos_at')    || null;
-  refreshToken = LS.getItem('sonos_rt')    || null;
-  tokenExpiry  = parseInt(LS.getItem('sonos_exp') || '0');
-  householdId  = LS.getItem('sonos_hh')    || null;
+  if(proxyUrl) $('proxy-url').value = proxyUrl;
+  const sid = LS.getItem('sonos_client_id');
+  if(sid) $('client-id').value = sid;
 
-  if (proxyUrl) document.getElementById('proxy-url').value = proxyUrl;
-  const savedId = LS.getItem('sonos_client_id');
-  if (savedId)  document.getElementById('client-id').value = savedId;
-
+  // Handle Sonos OAuth callback
   const params = new URLSearchParams(window.location.search);
-  if (params.has('code')) {
-    history.replaceState({}, '', REDIRECT_URI);
+  if(params.has('code')) {
+    history.replaceState({},  '', REDIRECT_URI);
     showLoader('Completing sign in…');
     await handleCallback(params.get('code'));
     return;
   }
 
-  if (accessToken) {
+  if(accessToken) {
     showLoader('Loading your Sonos system…');
-    try { await loadSystem(); }
-    catch(e) { hideLoader(); setDot('err'); setLabel('Auth error'); setBanner('err', 'Session expired — reconnect in Settings'); }
-  } else {
-    hideLoader();
-  }
+    try { await loadSystem(); } catch(e) { hideLoader(); setDot('err'); setLabel('Auth error'); setBanner('err','Session expired — reconnect in Settings'); }
+  } else { hideLoader(); }
 
-  initQueue();
-  renderQueue();
+  // Init YouTube Music
+  initMuse();
 });
 
-/* ── OAUTH ── */
-function startOAuth() {
-  const clientId = document.getElementById('client-id').value.trim();
-  const proxy    = document.getElementById('proxy-url').value.trim().replace(/\/+$/, '');
-  if (!proxy)    { toast('Enter your Worker URL first');  return; }
-  if (!clientId) { toast('Enter your Client ID first');   return; }
-  LS.setItem('sonos_proxy',     proxy);
+// ── MUSE / YOUTUBE MUSIC SETUP ───────────────────────────────
+function initMuse() {
+  if(!proxyUrl) return;
+
+  // Point all libmuse fetches through our Cloudflare Worker /ytm/ proxy
+  muse.set_option('fetch', (url, options) => {
+    return fetch(`${proxyUrl}/ytm/${url}`, options);
+  });
+
+  // Use localStorage to persist the YTM auth token
+  muse.setup({ store: new muse.LocalStorageStore() });
+
+  const auth = muse.get_option('auth');
+
+  // Check if already authenticated
+  if(auth.has_token()) {
+    setYtmConnected(true);
+    return;
+  }
+
+  // Listen for requires-login event from libmuse
+  auth.addEventListener('requires-login', event => {
+    const resolve = event.detail;
+    resolve(ytmAuthFlow);
+  });
+}
+
+function setYtmConnected(connected) {
+  ytmReady = connected;
+  $('ytm-dot').className = 'ytm-dot' + (connected ? ' ok' : '');
+  $('ytm-lbl').textContent = connected ? 'Connected' : 'Not connected';
+  $('ytm-conn-btn').textContent = connected ? 'Disconnect' : 'Connect';
+  $('ytm-sections').style.display = connected ? 'flex' : 'none';
+  $('ytm-search-row').style.display = connected ? 'flex' : 'none';
+  if(connected) loadYtmSection('search');
+}
+
+window.ytmConnect = async () => {
+  if(ytmReady) {
+    // Disconnect
+    muse.get_option('auth')._token = null;
+    LS.removeItem('libmuse:token');
+    setYtmConnected(false);
+    renderYtmList([]);
+    return;
+  }
+  if(!proxyUrl) { toast('Enter Worker URL in Settings first'); openSettings(); return; }
+  initMuse();
+  try {
+    await ytmAuthFlow();
+  } catch(e) {
+    toast('YouTube Music auth failed: ' + e.message);
+    $('auth-sheet').style.display = 'none';
+  }
+};
+
+async function ytmAuthFlow() {
+  const auth = muse.get_option('auth');
+  $('auth-sheet').style.display = 'block';
+  $('ytm-dot').className = 'ytm-dot busy';
+  $('ytm-lbl').textContent = 'Waiting for sign in…';
+
+  const loginCode = await auth.get_login_code();
+  $('auth-code').textContent = loginCode.user_code;
+  $('auth-url').textContent  = loginCode.verification_url;
+
+  await auth.load_token_with_code(loginCode.device_code, loginCode.interval);
+
+  $('auth-sheet').style.display = 'none';
+  setYtmConnected(true);
+  toast('YouTube Music connected!');
+}
+
+window.ytmCancelAuth = () => {
+  $('auth-sheet').style.display = 'none';
+  $('ytm-dot').className = 'ytm-dot';
+  $('ytm-lbl').textContent = 'Not connected';
+};
+
+// ── YTM SECTIONS ─────────────────────────────────────────────
+window.ytmSection = name => {
+  ytmSection_ = name;
+  document.querySelectorAll('.ytm-sec-btn').forEach((b,i) => {
+    b.classList.toggle('on', b.textContent.toLowerCase().replace(' ','') === name || (name==='liked' && b.textContent==='Liked songs') || (name==='history' && b.textContent==='History'));
+  });
+  $('ytm-search-row').style.display = name==='search' ? 'flex' : 'none';
+  if(name !== 'search') loadYtmSection(name);
+};
+
+async function loadYtmSection(name) {
+  if(!ytmReady) return;
+  renderYtmLoading();
+  try {
+    let items = [];
+    switch(name) {
+      case 'library':
+        const lib = await muse.get_library_songs();
+        items = (lib.songs || []).map(songToItem);
+        break;
+      case 'playlists':
+        const pl = await muse.get_library_playlists();
+        items = (pl.playlists || []).map(playlistToItem);
+        break;
+      case 'liked':
+        const liked = await muse.get_liked_songs();
+        items = (liked.songs || []).map(songToItem);
+        break;
+      case 'history':
+        const hist = await muse.get_history();
+        items = (hist.songs || []).map(songToItem);
+        break;
+      default:
+        renderYtmList([]);
+        return;
+    }
+    renderYtmList(items);
+  } catch(e) {
+    console.error('YTM section error:', e);
+    $('ytm-list').innerHTML = `<div class="ytm-empty">Failed to load: ${esc(e.message)}</div>`;
+  }
+}
+
+window.ytmSearch = async () => {
+  if(!ytmReady) { toast('Connect YouTube Music first'); return; }
+  const q = $('ytm-search').value.trim();
+  if(!q) return;
+  renderYtmLoading();
+  try {
+    const res   = await muse.search(q, { filter: 'songs' });
+    const items = (res.categories?.[0]?.results || res.songs || []).map(songToItem);
+    renderYtmList(items.length ? items : []);
+    if(!items.length) $('ytm-list').innerHTML = `<div class="ytm-empty">No results for "${esc(q)}"</div>`;
+  } catch(e) {
+    $('ytm-list').innerHTML = `<div class="ytm-empty">Search failed: ${esc(e.message)}</div>`;
+  }
+};
+
+function songToItem(song) {
+  return {
+    type:     'song',
+    id:       song.videoId,
+    title:    song.title || song.name || 'Unknown',
+    subtitle: song.artists?.map(a=>a.name).join(', ') || song.artist?.name || '',
+    thumb:    song.thumbnails?.slice(-1)[0]?.url || null,
+    duration: song.duration || song.durationSeconds || 0,
+  };
+}
+
+function playlistToItem(pl) {
+  return {
+    type:     'playlist',
+    id:       pl.playlistId,
+    title:    pl.title || pl.name || 'Playlist',
+    subtitle: pl.count ? `${pl.count} songs` : '',
+    thumb:    pl.thumbnails?.slice(-1)[0]?.url || null,
+  };
+}
+
+function renderYtmLoading() {
+  $('ytm-list').innerHTML = `<div class="ytm-empty"><div class="spinner-sm" style="margin:0 auto 8px"></div>Loading…</div>`;
+}
+
+function renderYtmList(items) {
+  if(!items.length) {
+    $('ytm-list').innerHTML = `<div class="ytm-empty">No items found</div>`;
+    return;
+  }
+  const fallback = `<svg width='20' height='20' viewBox='0 0 24 24' fill='var(--t3)'><path d='M12 3v10.55A4 4 0 1014 17V7h4V3h-6z'/></svg>`;
+  $('ytm-list').innerHTML = items.map((item, i) => `
+<div class="ytm-item" onclick="ytmItemClick(${i})">
+  <div class="ytm-thumb${item.type==='playlist'?' sq':''}">
+    ${item.thumb
+      ? `<img src="${esc(item.thumb)}" alt="" loading="lazy" onerror="this.outerHTML='${fallback.replace(/'/g,"&apos;")}'">` 
+      : fallback}
+  </div>
+  <div class="ytm-info">
+    <div class="ytm-name">${esc(item.title)}</div>
+    ${item.subtitle ? `<div class="ytm-sub">${esc(item.subtitle)}</div>` : ''}
+  </div>
+  <button class="ytm-play-btn" onclick="event.stopPropagation();ytmPlay(${i})" title="Play on Sonos">
+    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+</div>`).join('');
+  // Store items globally so click handlers can access them
+  window._ytmItems = items;
+}
+
+window.ytmItemClick = i => {
+  // If playlist, load its songs; if song, play it
+  const item = window._ytmItems?.[i];
+  if(!item) return;
+  if(item.type === 'playlist') {
+    loadPlaylist(item.id);
+  } else {
+    ytmPlay(i);
+  }
+};
+
+async function loadPlaylist(playlistId) {
+  renderYtmLoading();
+  try {
+    const pl    = await muse.get_playlist(playlistId);
+    const items = (pl.tracks || pl.songs || []).map(songToItem);
+    renderYtmList(items);
+  } catch(e) {
+    $('ytm-list').innerHTML = `<div class="ytm-empty">Failed to load playlist: ${esc(e.message)}</div>`;
+  }
+}
+
+window.ytmPlay = async i => {
+  const item = window._ytmItems?.[i];
+  if(!item) return;
+  if(!curGroupId) { toast('Select a Sonos room first'); switchTab('player'); return; }
+  if(item.type === 'playlist') { loadPlaylist(item.id); return; }
+
+  toast('Loading track…');
+  try {
+    // Get the song queue from libmuse (this gives us the stream URL)
+    const queue = await muse.get_queue(item.id, { radio: false });
+    const track = queue?.tracks?.[0];
+    const streamUrl = track?.formats
+      ?.filter(f => f.mimeType?.startsWith('audio/'))
+      ?.sort((a,b) => (b.bitrate||0)-(a.bitrate||0))[0]?.url;
+
+    if(!streamUrl) { toast('Could not get stream URL'); return; }
+
+    // Send stream URL to Sonos via the API
+    await sonosPost(`/groups/${curGroupId}/playback/playStreamUrl`, {
+      httpStreamUrl: streamUrl,
+      title:         item.title,
+      artist:        item.subtitle,
+    });
+
+    // Update now playing display
+    $('np-title').textContent  = item.title;
+    $('np-artist').textContent = item.subtitle;
+    if(item.thumb) {
+      $('np-art').innerHTML = `<img src="${esc(item.thumb)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
+    }
+    totSec   = item.duration || 0;
+    playing  = true;
+    syncPlayIcon();
+    startProg();
+    renderRooms();
+    switchTab('player');
+    toast('Playing on Sonos: ' + item.title);
+  } catch(e) {
+    console.error('ytmPlay error:', e);
+    toast('Playback failed: ' + e.message);
+  }
+};
+
+// ── SONOS AUTH ───────────────────────────────────────────────
+window.startOAuth = () => {
+  const clientId = $('client-id').value.trim();
+  const proxy    = $('proxy-url').value.trim().replace(/\/+$/,'');
+  if(!proxy)    { toast('Enter your Worker URL first'); return; }
+  if(!clientId) { toast('Enter your Client ID first');  return; }
+  LS.setItem('sonos_proxy', proxy);
   LS.setItem('sonos_client_id', clientId);
   proxyUrl = proxy;
-  const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  const state = Math.random().toString(36).slice(2)+Date.now().toString(36);
   LS.setItem('sonos_state', state);
   const url = new URL(SONOS_AUTH);
   url.searchParams.set('client_id',     clientId);
@@ -420,166 +742,173 @@ function startOAuth() {
   url.searchParams.set('scope',         'playback-control-all');
   url.searchParams.set('state',         state);
   window.location.href = url.toString();
-}
+};
 
 async function handleCallback(code) {
   proxyUrl = LS.getItem('sonos_proxy') || '';
-  if (!proxyUrl) { hideLoader(); toast('Worker URL missing — re-enter in Settings'); openSettings(); return; }
+  if(!proxyUrl) { hideLoader(); toast('Worker URL missing'); openSettings(); return; }
   try {
     const res  = await fetch(`${proxyUrl}/token`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ code, redirect_uri: REDIRECT_URI }),
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ code, redirect_uri: REDIRECT_URI }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if(!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
     saveTokens(data);
     await loadSystem();
   } catch(e) {
     hideLoader(); setDot('err');
-    console.error('handleCallback:', e);
-    setBanner('err', 'Sign in failed: ' + e.message);
+    setBanner('err', 'Sign in failed: '+e.message);
     openSettings();
   }
 }
 
-function saveTokens(data) {
-  accessToken  = data.access_token;
-  refreshToken = data.refresh_token || refreshToken;
-  tokenExpiry  = Date.now() + (data.expires_in || 3600) * 1000;
+function saveTokens(d) {
+  accessToken  = d.access_token;
+  refreshToken = d.refresh_token || refreshToken;
+  tokenExpiry  = Date.now() + (d.expires_in||3600)*1000;
   LS.setItem('sonos_at',  accessToken);
   LS.setItem('sonos_rt',  refreshToken);
   LS.setItem('sonos_exp', tokenExpiry.toString());
 }
 
 async function ensureFreshToken() {
-  if (Date.now() < tokenExpiry - 60000) return;
-  if (!refreshToken) throw new Error('No refresh token — please reconnect');
+  if(Date.now() < tokenExpiry - 60000) return;
+  if(!refreshToken) throw new Error('No refresh token');
   proxyUrl = proxyUrl || LS.getItem('sonos_proxy') || '';
-  if (!proxyUrl) throw new Error('No proxy URL');
   const res  = await fetch(`${proxyUrl}/refresh`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ refresh_token: refreshToken }),
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({refresh_token: refreshToken}),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Token refresh failed');
+  if(!res.ok) throw new Error(data.error||'Refresh failed');
   saveTokens(data);
 }
 
-/* ── LOAD SYSTEM ── */
+// ── SONOS API ────────────────────────────────────────────────
+async function sonosGet(path) {
+  await ensureFreshToken();
+  const res = await fetch(`${proxyUrl}/api${path}`, {headers:{'Authorization':`Bearer ${accessToken}`}});
+  if(!res.ok) throw new Error(`GET ${path} → ${res.status}`);
+  return res.json();
+}
+
+async function sonosPost(path, body={}) {
+  await ensureFreshToken();
+  const res = await fetch(`${proxyUrl}/api${path}`, {
+    method:'POST',
+    headers:{'Authorization':`Bearer ${accessToken}`,'Content-Type':'application/json'},
+    body: JSON.stringify(body),
+  });
+  if(!res.ok) console.warn(`POST ${path} → ${res.status}`);
+  return res;
+}
+
+// ── LOAD SYSTEM ──────────────────────────────────────────────
 async function loadSystem() {
   setDot('busy'); setLabel('Loading…');
-  document.getElementById('loader-text').textContent = 'Discovering your Sonos system…';
   const hData = await sonosGet('/households');
-  if (!hData.households?.length) throw new Error('No households found');
-  if (!householdId || !hData.households.find(h => h.id === householdId)) {
+  if(!hData.households?.length) throw new Error('No households');
+  if(!householdId || !hData.households.find(h=>h.id===householdId)) {
     householdId = hData.households[0].id;
     LS.setItem('sonos_hh', householdId);
   }
   await loadGroups();
-  hideLoader();
-  setDot('ok'); setLabel('Connected');
-  setBanner('ok', `Connected · ${groups.length} room${groups.length !== 1 ? 's' : ''} found`);
+  hideLoader(); setDot('ok'); setLabel('Connected');
+  setBanner('ok', `Connected · ${groups.length} room${groups.length!==1?'s':''} found`);
   closeModal('settings-modal');
   startPolling();
+  initMuse(); // Init YTM after we have the proxy URL
 }
 
 async function loadGroups() {
   const data    = await sonosGet(`/households/${householdId}/groups`);
   const players = data.players || [];
-  groups = (data.groups || []).map(g => {
-    const prev   = groups.find(eg => eg.id === g.id);
-    const player = players.find(p => g.playerIds?.includes(p.id));
-    return { id: g.id, name: g.name, playerIds: g.playerIds || [], vol: player?.volume ?? prev?.vol ?? 50, grouped: false };
+  groups = (data.groups||[]).map(g => {
+    const prev   = groups.find(eg=>eg.id===g.id);
+    const player = players.find(p=>g.playerIds?.includes(p.id));
+    return {id:g.id, name:g.name, playerIds:g.playerIds||[], vol:player?.volume??prev?.vol??50, grouped:false};
   });
   renderRooms();
 }
 
-/* ── POLLING ── */
+// ── POLLING ──────────────────────────────────────────────────
 function startPolling() {
   clearInterval(pollTimer);
   pollTimer = setInterval(pollPlayback, 8000);
-  if (curGroupId) pollPlayback();
+  if(curGroupId) pollPlayback();
 }
 
 async function pollPlayback() {
-  if (!curGroupId || !accessToken) return;
+  if(!curGroupId||!accessToken) return;
   try {
     const [pb, meta] = await Promise.all([
       sonosGet(`/groups/${curGroupId}/playback`),
       sonosGet(`/groups/${curGroupId}/playbackMetadata`),
     ]);
     const nowPlaying = pb.playbackState === 'PLAYBACK_STATE_PLAYING';
-    if (nowPlaying !== playing) {
+    if(nowPlaying !== playing) {
       playing = nowPlaying; syncPlayIcon();
-      if (playing && !progTimer) startProg();
-      else if (!playing) { clearInterval(progTimer); progTimer = null; }
+      if(playing && !progTimer) startProg();
+      else if(!playing) { clearInterval(progTimer); progTimer=null; }
     }
-    if (pb.positionMillis !== undefined) curSec = Math.round(pb.positionMillis / 1000);
-    if (pb.volume !== undefined) {
-      const g = groups.find(g => g.id === curGroupId);
-      if (g) g.vol = pb.volume;
-      document.getElementById('mvol').value = pb.volume;
-      document.getElementById('mvol-val').textContent = pb.volume;
+    if(pb.positionMillis!==undefined) curSec = Math.round(pb.positionMillis/1000);
+    if(pb.volume!==undefined) {
+      const g = groups.find(g=>g.id===curGroupId); if(g) g.vol=pb.volume;
+      $('mvol').value=$('mvol-val').textContent=pb.volume;
     }
     const t = meta.currentItem?.track;
-    if (t) {
-      document.getElementById('np-title').textContent  = t.name || 'Unknown';
-      document.getElementById('np-artist').textContent = t.artist?.name || t.artists?.[0]?.name || '';
-      if (t.durationMillis) totSec = Math.round(t.durationMillis / 1000);
-      if (t.imageUrl) {
-        document.getElementById('np-art').innerHTML =
-          `<img src="${esc(t.imageUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"
-            onerror="this.parentElement.innerHTML='<svg width=26 height=26 viewBox=&quot;0 0 24 24&quot; fill=&quot;var(--t3)&quot;><path d=&quot;M12 3v10.55A4 4 0 1014 17V7h4V3h-6z&quot;/></svg>'">`;
-      }
+    if(t) {
+      $('np-title').textContent  = t.name||'Unknown';
+      $('np-artist').textContent = t.artist?.name||t.artists?.[0]?.name||'';
+      if(t.durationMillis) totSec = Math.round(t.durationMillis/1000);
+      if(t.imageUrl) $('np-art').innerHTML=`<img src="${esc(t.imageUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
       updateProg();
     }
-    if (pb.playModes) {
-      shuffle = !!pb.playModes.shuffle; repeatMode = !!pb.playModes.repeat;
-      document.getElementById('shuf-btn').classList.toggle('lit', shuffle);
-      document.getElementById('rep-btn').classList.toggle('lit', repeatMode);
+    if(pb.playModes) {
+      shuffle=!!pb.playModes.shuffle; repeatMode=!!pb.playModes.repeat;
+      $('shuf-btn').classList.toggle('lit',shuffle);
+      $('rep-btn').classList.toggle('lit',repeatMode);
     }
     renderRooms();
-  } catch(e) { console.warn('poll:', e.message); }
+  } catch(e) { console.warn('poll:',e.message); }
 }
 
-/* ── ROOMS ── */
-function selectRoom(id) {
-  curGroupId = id;
-  const g = groups.find(g => g.id === id);
-  document.getElementById('np-room').textContent = g?.name || id;
-  if (g) { document.getElementById('mvol').value = g.vol; document.getElementById('mvol-val').textContent = g.vol; }
+// ── ROOMS ────────────────────────────────────────────────────
+window.selectRoom = id => {
+  curGroupId=id;
+  const g=groups.find(g=>g.id===id);
+  $('np-room').textContent = g?.name||id;
+  if(g){$('mvol').value=g.vol;$('mvol-val').textContent=g.vol;}
   renderRooms(); pollPlayback();
-  toast('Room: ' + (g?.name || id));
-}
-function toggleGroup(i, e) {
-  e.stopPropagation(); groups[i].grouped = !groups[i].grouped; renderRooms();
-  toast(groups[i].name + (groups[i].grouped ? ' grouped' : ' ungrouped'));
-}
-async function groupAll() {
-  if (!curGroupId) { toast('Select a room first'); return; }
-  groups.filter(g => g.id !== curGroupId).forEach(g => g.grouped = true); renderRooms();
-  for (const g of groups.filter(g => g.id !== curGroupId)) {
-    try { await sonosPost(`/groups/${curGroupId}/groups/modifyGroupMembers`, { playerIdsToAdd: g.playerIds }); } catch(e) { console.warn(e); }
-  }
-  toast('All rooms grouped'); setTimeout(loadGroups, 2000);
-}
-async function ungroupAll() {
-  groups.forEach(g => g.grouped = false); renderRooms();
-  for (const g of groups.filter(g => g.id !== curGroupId && g.playerIds.length)) {
-    try { await sonosPost(`/groups/${g.id}/groups/createGroup`, { playerIds: g.playerIds }); } catch(e) { console.warn(e); }
-  }
-  toast('Rooms ungrouped'); setTimeout(loadGroups, 2000);
-}
+  toast('Room: '+(g?.name||id));
+};
+window.toggleGroup = (i,e) => {
+  e.stopPropagation(); groups[i].grouped=!groups[i].grouped; renderRooms();
+  toast(groups[i].name+(groups[i].grouped?' grouped':' ungrouped'));
+};
+window.groupAll = async () => {
+  if(!curGroupId){toast('Select a room first');return;}
+  groups.filter(g=>g.id!==curGroupId).forEach(g=>g.grouped=true); renderRooms();
+  for(const g of groups.filter(g=>g.id!==curGroupId))
+    try{await sonosPost(`/groups/${curGroupId}/groups/modifyGroupMembers`,{playerIdsToAdd:g.playerIds});}catch(e){console.warn(e);}
+  toast('All rooms grouped'); setTimeout(loadGroups,2000);
+};
+window.ungroupAll = async () => {
+  groups.forEach(g=>g.grouped=false); renderRooms();
+  for(const g of groups.filter(g=>g.id!==curGroupId&&g.playerIds.length))
+    try{await sonosPost(`/groups/${g.id}/groups/createGroup`,{playerIds:g.playerIds});}catch(e){console.warn(e);}
+  toast('Rooms ungrouped'); setTimeout(loadGroups,2000);
+};
+
 function renderRooms() {
-  const grid = document.getElementById('rooms-grid');
-  if (!groups.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--t3);font-size:13px">${accessToken ? 'Loading rooms…' : 'Connect your Sonos account to see rooms'}</div>`;
+  const grid=$('rooms-grid');
+  if(!groups.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--t3);font-size:13px">${accessToken?'Loading rooms…':'Connect your Sonos account to see rooms'}</div>`;
     return;
   }
-  grid.innerHTML = groups.map((g, i) => {
-    const active = g.id === curGroupId, isPlay = active && playing;
+  grid.innerHTML=groups.map((g,i)=>{
+    const active=g.id===curGroupId, isPlay=active&&playing;
     return `
 <div class="rcard${active?' active':''}${g.grouped?' grouped':''}" onclick="selectRoom('${esc(g.id)}')">
   <div class="rcard-top">
@@ -596,131 +925,90 @@ function renderRooms() {
   }).join('');
 }
 
-/* ── PLAYBACK ── */
-async function togglePlay() {
-  if (!curGroupId) { toast('Select a room first'); return; }
-  playing = !playing; syncPlayIcon();
-  if (playing) startProg(); else { clearInterval(progTimer); progTimer = null; }
+// ── PLAYBACK CONTROLS ────────────────────────────────────────
+window.togglePlay = async () => {
+  if(!curGroupId){toast('Select a room first');return;}
+  playing=!playing; syncPlayIcon();
+  if(playing) startProg(); else{clearInterval(progTimer);progTimer=null;}
   renderRooms();
   await sonosPost(`/groups/${curGroupId}/playback/${playing?'play':'pause'}`);
+};
+function syncPlayIcon(){
+  $('pico').innerHTML=playing
+    ?'<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
+    :'<path d="M8 5v14l11-7z"/>';
 }
-function syncPlayIcon() {
-  document.getElementById('pico').innerHTML = playing
-    ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
-    : '<path d="M8 5v14l11-7z"/>';
-}
-async function prevTrack() {
-  if (!curGroupId) return;
-  if (curSec > 3) { curSec=0; updateProg(); await sonosPost(`/groups/${curGroupId}/playback/seek`,{positionMillis:0}); return; }
+window.prevTrack = async () => {
+  if(!curGroupId) return;
+  if(curSec>3){curSec=0;updateProg();await sonosPost(`/groups/${curGroupId}/playback/seek`,{positionMillis:0});return;}
   await sonosPost(`/groups/${curGroupId}/playback/skipToPreviousTrack`);
-  setTimeout(pollPlayback, 1000);
-}
-async function nextTrack() {
-  if (!curGroupId) return;
+  setTimeout(pollPlayback,1000);
+};
+window.nextTrack = async () => {
+  if(!curGroupId) return;
   await sonosPost(`/groups/${curGroupId}/playback/skipToNextTrack`);
-  setTimeout(pollPlayback, 1000);
-}
-function startProg() {
+  setTimeout(pollPlayback,1000);
+};
+function startProg(){
   clearInterval(progTimer);
-  progTimer = setInterval(() => { if (!playing) return; curSec = Math.min(curSec+1, totSec||9999); updateProg(); }, 1000);
+  progTimer=setInterval(()=>{if(!playing)return;curSec=Math.min(curSec+1,totSec||9999);updateProg();},1000);
 }
-function updateProg() {
-  const pct = totSec > 0 ? Math.min((curSec/totSec)*100, 100) : 0;
-  document.getElementById('prog-fill').style.width = pct.toFixed(2) + '%';
-  document.getElementById('t-cur').textContent = fmt(curSec);
-  document.getElementById('t-tot').textContent = fmt(totSec);
+function updateProg(){
+  const pct=totSec>0?Math.min((curSec/totSec)*100,100):0;
+  $('prog-fill').style.width=pct.toFixed(2)+'%';
+  $('t-cur').textContent=fmt(curSec);
+  $('t-tot').textContent=fmt(totSec);
 }
-function seekClick(e) {
-  if (!curGroupId || !totSec) return;
-  const pct = Math.max(0, Math.min(1, e.offsetX / document.getElementById('prog-bar').offsetWidth));
-  curSec = Math.round(pct * totSec); updateProg();
-  sonosPost(`/groups/${curGroupId}/playback/seek`, { positionMillis: curSec * 1000 });
-}
-async function toggleShuffle() {
-  shuffle = !shuffle; document.getElementById('shuf-btn').classList.toggle('lit', shuffle);
-  if (curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`, { playModes: { shuffle } });
-  toast('Shuffle ' + (shuffle ? 'on' : 'off'));
-}
-async function toggleRepeat() {
-  repeatMode = !repeatMode; document.getElementById('rep-btn').classList.toggle('lit', repeatMode);
-  if (curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`, { playModes: { repeat: repeatMode } });
-  toast('Repeat ' + (repeatMode ? 'on' : 'off'));
-}
-async function onMasterVol(v) {
-  v = parseInt(v); document.getElementById('mvol-val').textContent = v;
-  if (!curGroupId) return;
-  const g = groups.find(g => g.id === curGroupId); if (g) g.vol = v;
-  await sonosPost(`/groups/${curGroupId}/groupVolume`, { volume: v });
-}
-async function onRoomVol(i, v) {
-  v = parseInt(v); groups[i].vol = v; document.getElementById('rvv'+i).textContent = v;
-  await sonosPost(`/groups/${groups[i].id}/groupVolume`, { volume: v });
-}
+window.seekClick = e => {
+  if(!curGroupId||!totSec) return;
+  const pct=Math.max(0,Math.min(1,e.offsetX/$('prog-bar').offsetWidth));
+  curSec=Math.round(pct*totSec); updateProg();
+  sonosPost(`/groups/${curGroupId}/playback/seek`,{positionMillis:curSec*1000});
+};
+window.toggleShuffle = async () => {
+  shuffle=!shuffle; $('shuf-btn').classList.toggle('lit',shuffle);
+  if(curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`,{playModes:{shuffle}});
+  toast('Shuffle '+(shuffle?'on':'off'));
+};
+window.toggleRepeat = async () => {
+  repeatMode=!repeatMode; $('rep-btn').classList.toggle('lit',repeatMode);
+  if(curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`,{playModes:{repeat:repeatMode}});
+  toast('Repeat '+(repeatMode?'on':'off'));
+};
+window.onMasterVol = async v => {
+  v=parseInt(v); $('mvol-val').textContent=v;
+  if(!curGroupId) return;
+  const g=groups.find(g=>g.id===curGroupId); if(g) g.vol=v;
+  await sonosPost(`/groups/${curGroupId}/groupVolume`,{volume:v});
+};
+window.onRoomVol = async (i,v) => {
+  v=parseInt(v); groups[i].vol=v; $('rvv'+i).textContent=v;
+  await sonosPost(`/groups/${groups[i].id}/groupVolume`,{volume:v});
+};
 
-/* ── QUEUE ── */
-function initQueue() {
-  queue = [
-    {title:'Blinding Lights',artist:'The Weeknd',  dur:'3:20',s:200,art:demoArt(0)},
-    {title:'As It Was',      artist:'Harry Styles',dur:'2:37',s:157,art:demoArt(1)},
-    {title:'Bad Habit',      artist:'Steve Lacy',  dur:'3:51',s:231,art:demoArt(2)},
-    {title:'About Damn Time',artist:'Lizzo',       dur:'3:13',s:193,art:demoArt(3)},
-    {title:'Flowers',        artist:'Miley Cyrus', dur:'3:21',s:201,art:demoArt(4)},
-    {title:'Levitating',     artist:'Dua Lipa',    dur:'3:23',s:203,art:demoArt(5)},
-  ];
-}
-function addTrack() {
-  const inp = document.getElementById('yt-inp'), val = inp.value.trim();
-  if (!val) { toast('Enter a URL or track name'); return; }
-  queue.push({ title: /^https?:/.test(val) ? 'YouTube Music track' : val, artist:'YouTube Music', dur:'--:--', s:0, art:demoArt(queue.length) });
-  inp.value = ''; renderQueue();
-  toast(/^https?:/.test(val) ? 'Added to queue' : `Added: "${val}"`);
-}
-function removeTrack(i, e) {
-  e.stopPropagation();
-  if (queue.length <= 1) { toast("Can't remove the only track"); return; }
-  queue.splice(i, 1); if (qIdx >= queue.length) qIdx = queue.length - 1;
-  renderQueue();
-}
-function renderQueue() {
-  const fb = `<svg width='18' height='18' viewBox='0 0 24 24' fill='var(--t3)'><path d='M12 3v10.55A4 4 0 1014 17V7h4V3h-6z'/></svg>`;
-  document.getElementById('qlist').innerHTML = queue.map((t,i) => `
-<div class="qitem${i===qIdx?' cur':''}" onclick="playQueueItem(${i})">
-  <span class="qnum">${i===qIdx&&playing?'<span class="eq"><b></b><b></b><b></b></span>':i+1}</span>
-  <div class="qthumb"><img src="${t.art}" alt="" loading="lazy" onerror="this.outerHTML='${fb.replace(/'/g,"&apos;")}'" ></div>
-  <div class="qinfo"><div class="qtitle">${esc(t.title)}</div><div class="qartist">${esc(t.artist)}</div></div>
-  <span class="qdur">${t.dur}</span>
-  <button class="qdel" onclick="removeTrack(${i},event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
-</div>`).join('');
-}
-function playQueueItem(i) {
-  if (!curGroupId) { toast('Select a room first'); return; }
-  qIdx = i; renderQueue(); toast('Playing: ' + queue[i].title);
-}
-
-/* ── SETTINGS ── */
-async function refreshRooms() {
-  if (!accessToken) { toast('Not connected'); return; }
+// ── SETTINGS ─────────────────────────────────────────────────
+window.refreshRooms = async () => {
+  if(!accessToken){toast('Not connected');return;}
   toast('Refreshing rooms…');
-  try { await loadGroups(); toast('Rooms updated'); } catch(e) { toast('Failed: ' + e.message); }
-}
-function signOut() {
-  accessToken = refreshToken = householdId = null; tokenExpiry = 0;
-  groups = []; curGroupId = null; playing = false;
-  clearInterval(progTimer); clearInterval(pollTimer); progTimer = pollTimer = null;
-  ['sonos_at','sonos_rt','sonos_exp','sonos_hh'].forEach(k => LS.removeItem(k));
-  setDot(''); setLabel('Not connected'); setBanner('info', 'Not connected');
+  try{await loadGroups();toast('Rooms updated');}catch(e){toast('Failed: '+e.message);}
+};
+window.signOut = () => {
+  accessToken=refreshToken=householdId=null; tokenExpiry=0;
+  groups=[]; curGroupId=null; playing=false;
+  clearInterval(progTimer); clearInterval(pollTimer); progTimer=pollTimer=null;
+  ['sonos_at','sonos_rt','sonos_exp','sonos_hh'].forEach(k=>LS.removeItem(k));
+  setDot(''); setLabel('Not connected'); setBanner('info','Not connected');
   syncPlayIcon(); renderRooms(); closeModal('settings-modal'); toast('Signed out');
-}
+};
 
-/* ── MODAL / TOAST ── */
-function openSettings() { document.getElementById('settings-modal').classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function onModalBg(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
-function toast(msg) {
-  const el = document.getElementById('toast-el');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
-}
+// ── MODAL / TOAST ─────────────────────────────────────────────
+window.openSettings = () => $('settings-modal').classList.add('open');
+window.closeModal   = id => $(id).classList.remove('open');
+window.onModalBg    = (e,id) => { if(e.target===$(id)) closeModal(id); };
+window.toast = msg => {
+  const el=$('toast-el'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
+};
 </script>
 </body>
 </html>
