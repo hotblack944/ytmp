@@ -668,13 +668,13 @@ async function loadYtmSection(name) {
   try {
     let items = [];
     if(name === 'library') {
-      const data = await ytmCall('browse', { browseId: 'FEmusic_liked_videos' });
+      const data = await ytmCall('browse', { browseId: 'VLLM' });
       items = parseTrackList(data);
     } else if(name === 'playlists') {
       const data = await ytmCall('browse', { browseId: 'FEmusic_liked_playlists' });
       items = parsePlaylistList(data);
     } else if(name === 'liked') {
-      const data = await ytmCall('browse', { browseId: 'FEmusic_liked_videos' });
+      const data = await ytmCall('browse', { browseId: 'VLLM' });
       items = parseTrackList(data);
     } else if(name === 'history') {
       const data = await ytmCall('browse', { browseId: 'FEmusic_history' });

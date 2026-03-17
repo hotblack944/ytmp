@@ -19,22 +19,22 @@
 
 const SONOS_TOKEN_URL = 'https://api.sonos.com/login/v3/oauth/access';
 const SONOS_API_BASE  = 'https://api.ws.sonos.com/control/api/v1';
-const YTM_API_BASE    = 'https://music.youtube.com/youtubei/v1';
+const YTM_API_BASE    = 'https://music.youtube.com/youtubei/v1/';
+const YTM_API_PARAMS  = '?alt=json';  // No API key needed for OAuth Bearer token auth
 
 // YouTube TV OAuth (same client ID libmuse uses — public, baked into the TV app)
 const YT_TV_CLIENT_ID     = '861556708454-d6dlm3lh05idd8npek18k6be8ba3oc68.apps.googleusercontent.com';
 const YT_TV_CLIENT_SECRET = 'SboVhoG9s0rNafixCSGGKXAT';
 const YT_TV_SCOPE         = 'https://www.googleapis.com/auth/youtube';
 
-// Android Music client context — more permissive than WEB_REMIX, no API key needed
-const ANDROID_CONTEXT = {
-  client: {
-    clientName:    'ANDROID_MUSIC',
-    clientVersion: '7.19.51',
-    androidSdkVersion: 30,
-    userAgent: 'com.google.android.apps.youtube.music/7.19.51 (Linux; U; Android 11) gzip',
-    hl: 'en',
-    gl: 'GB',
+// WEB_REMIX context — matches what ytmusicapi uses (current working client)
+const YTM_CONTEXT = {
+  context: {
+    client: {
+      clientName:    'WEB_REMIX',
+      clientVersion: '1.20260317.01.00',
+    },
+    user: {}
   }
 };
 
@@ -190,24 +190,39 @@ async function ytmRefreshToken(request) {
 
 // Make an InnerTube request from the worker (no CORS issues here)
 async function innerTube(endpoint, body, accessToken) {
-  const url = `${YTM_API_BASE}/${endpoint}?prettyPrint=false`;
+  const url = `${YTM_API_BASE}${endpoint}${YTM_API_PARAMS}`;
   const headers = {
-    'Content-Type':            'application/json',
-    'User-Agent':              'com.google.android.apps.youtube.music/7.19.51 (Linux; U; Android 11) gzip',
-    'X-Goog-AuthUser':         '0',
-    'X-Youtube-Client-Name':   '26',
-    'X-Youtube-Client-Version':'7.19.51',
-    'Origin':                  'https://music.youtube.com',
+    'user-agent':       'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0',
+    'accept':           '*/*',
+    'accept-encoding':  'gzip, deflate',
+    'content-type':     'application/json',
+    'origin':           'https://music.youtube.com',
+    'x-goog-authuser':  '0',
   };
-  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+  if (accessToken) headers['authorization'] = `Bearer ${accessToken}`;
+
+  const requestBody = JSON.stringify({ ...YTM_CONTEXT, ...body });
 
   const res = await fetch(url, {
     method:  'POST',
     headers,
-    body: JSON.stringify({ context: ANDROID_CONTEXT, ...body }),
+    body: requestBody,
   });
 
   const text = await res.text();
+
+  // Return debug info alongside the response so we can diagnose 400s
+  if (res.status !== 200) {
+    const debug = {
+      debug_url:     url,
+      debug_headers: headers,
+      debug_body:    JSON.parse(requestBody),
+      debug_status:  res.status,
+      debug_response: JSON.parse(text || '{}'),
+    };
+    return { status: res.status, text: JSON.stringify(debug) };
+  }
+
   return { status: res.status, text };
 }
 
