@@ -6,16 +6,38 @@
  *   SONOS_CLIENT_SECRET = your Sonos Client Secret
  *
  * ENDPOINTS:
- *   POST /token          — Sonos OAuth code exchange
- *   POST /refresh        — Sonos token refresh
- *   GET|POST /api/*      — Sonos API proxy  (→ api.ws.sonos.com)
- *   GET|POST /ytm/*      — YouTube Music proxy (→ music.youtube.com)
+ *   POST /token              — Sonos OAuth code exchange
+ *   POST /refresh            — Sonos token refresh
+ *   GET|POST /api/*          — Sonos API proxy
+ *   POST /ytm/search         — YTM search
+ *   POST /ytm/browse         — YTM browse (library, playlists etc)
+ *   POST /ytm/player         — YTM get stream URLs for a video
+ *   POST /ytm/auth/code      — Get device login code
+ *   POST /ytm/auth/token     — Poll for OAuth token
+ *   POST /ytm/auth/refresh   — Refresh OAuth token
  */
 
 const SONOS_TOKEN_URL = 'https://api.sonos.com/login/v3/oauth/access';
 const SONOS_API_BASE  = 'https://api.ws.sonos.com/control/api/v1';
+const YTM_API_BASE    = 'https://music.youtube.com/youtubei/v1';
 
-// For preflight we echo back whatever headers the browser asked to use.
+// YouTube TV OAuth (same client ID libmuse uses — public, baked into the TV app)
+const YT_TV_CLIENT_ID     = '861556708454-d6dlm3lh05idd8npek18k6be8ba3oc68.apps.googleusercontent.com';
+const YT_TV_CLIENT_SECRET = 'SboVhoG9s0rNafixCSGGKXAT';
+const YT_TV_SCOPE         = 'https://www.googleapis.com/auth/youtube';
+
+// Android Music client context — more permissive than WEB_REMIX, no API key needed
+const ANDROID_CONTEXT = {
+  client: {
+    clientName:    'ANDROID_MUSIC',
+    clientVersion: '7.19.51',
+    androidSdkVersion: 30,
+    userAgent: 'com.google.android.apps.youtube.music/7.19.51 (Linux; U; Android 11) gzip',
+    hl: 'en',
+    gl: 'GB',
+  }
+};
+
 function preflightHeaders(request) {
   return {
     'Access-Control-Allow-Origin':  '*',
@@ -38,148 +60,190 @@ export default {
     }
 
     const url = new URL(request.url);
+    const path = url.pathname;
 
-    if (request.method === 'POST' && url.pathname === '/token') {
-      return handleSonosToken(request, env);
-    }
-    if (request.method === 'POST' && url.pathname === '/refresh') {
-      return handleSonosRefresh(request, env);
-    }
-    if (url.pathname.startsWith('/api/')) {
-      return proxySonos(request, url);
-    }
-    if (url.pathname.startsWith('/ytm/')) {
-      return proxyYTM(request, url);
-    }
+    // ── Sonos ─────────────────────────────────────────────
+    if (request.method === 'POST' && path === '/token')   return handleSonosToken(request, env);
+    if (request.method === 'POST' && path === '/refresh') return handleSonosRefresh(request, env);
+    if (path.startsWith('/api/'))                         return proxySonos(request, url);
+
+    // ── YouTube Music ──────────────────────────────────────
+    if (path === '/ytm/auth/code')    return ytmGetLoginCode(request);
+    if (path === '/ytm/auth/token')   return ytmPollToken(request);
+    if (path === '/ytm/auth/refresh') return ytmRefreshToken(request);
+    if (path === '/ytm/search')       return ytmSearch(request);
+    if (path === '/ytm/browse')       return ytmBrowse(request);
+    if (path === '/ytm/player')       return ytmPlayer(request);
 
     return jsonResp(404, { error: 'Not found' });
   },
 };
 
-/* ── SONOS TOKEN EXCHANGE ── */
+/* ══════════════════════════════════════════════════════════════
+   SONOS
+══════════════════════════════════════════════════════════════ */
 async function handleSonosToken(request, env) {
   try {
     const { code, redirect_uri } = await request.json();
-    if (!code || !redirect_uri) return jsonResp(400, { error: 'Missing code or redirect_uri' });
-    const res = await fetch(SONOS_TOKEN_URL, {
-      method:  'POST',
-      headers: {
-        'Content-Type':  'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${env.SONOS_CLIENT_ID}:${env.SONOS_CLIENT_SECRET}`)}`,
-      },
+    if (!code || !redirect_uri) return jsonResp(400, { error: 'Missing params' });
+    const res  = await fetch(SONOS_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${btoa(`${env.SONOS_CLIENT_ID}:${env.SONOS_CLIENT_SECRET}`)}` },
       body: new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri }).toString(),
     });
     const data = await res.json();
-    if (!res.ok) return jsonResp(res.status, { error: data.error_description || data.error || 'Token exchange failed' });
+    if (!res.ok) return jsonResp(res.status, { error: data.error_description || data.error });
     return jsonResp(200, data);
   } catch(e) { return jsonResp(500, { error: e.message }); }
 }
 
-/* ── SONOS TOKEN REFRESH ── */
 async function handleSonosRefresh(request, env) {
   try {
     const { refresh_token } = await request.json();
     if (!refresh_token) return jsonResp(400, { error: 'Missing refresh_token' });
-    const res = await fetch(SONOS_TOKEN_URL, {
-      method:  'POST',
-      headers: {
-        'Content-Type':  'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${env.SONOS_CLIENT_ID}:${env.SONOS_CLIENT_SECRET}`)}`,
-      },
+    const res  = await fetch(SONOS_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${btoa(`${env.SONOS_CLIENT_ID}:${env.SONOS_CLIENT_SECRET}`)}` },
       body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token }).toString(),
     });
     const data = await res.json();
-    if (!res.ok) return jsonResp(res.status, { error: data.error_description || data.error || 'Refresh failed' });
+    if (!res.ok) return jsonResp(res.status, { error: data.error_description || data.error });
     return jsonResp(200, data);
   } catch(e) { return jsonResp(500, { error: e.message }); }
 }
 
-/* ── SONOS API PROXY ── */
 async function proxySonos(request, url) {
   try {
     const sonosUrl = SONOS_API_BASE + url.pathname.replace(/^\/api/, '') + (url.search || '');
     const auth = request.headers.get('Authorization');
-    if (!auth) return jsonResp(401, { error: 'Missing Authorization header' });
-    const init = {
-      method:  request.method,
-      headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
-    };
+    if (!auth) return jsonResp(401, { error: 'Missing Authorization' });
+    const init = { method: request.method, headers: { 'Authorization': auth, 'Content-Type': 'application/json' } };
     if (request.method === 'POST') init.body = await request.text();
     const res  = await fetch(sonosUrl, init);
     const text = await res.text();
-    return new Response(text.length ? text : '{}', {
-      status:  res.status,
-      headers: { 'Content-Type': 'application/json', ...CORS },
-    });
+    return new Response(text || '{}', { status: res.status, headers: { 'Content-Type': 'application/json', ...CORS } });
   } catch(e) { return jsonResp(500, { error: e.message }); }
 }
 
-/* ── YOUTUBE MUSIC PROXY ── */
-//
-// The browser adds Sec-Fetch-* and other headers that confuse YouTube.
-// We completely ignore all browser headers and rebuild them from scratch
-// using the exact same headers that libmuse's constants-ng.js specifies.
-// This makes requests look like they come from the YouTube Music web app.
-//
-// The only browser header we DO forward is Authorization (the OAuth token)
-// and Content-Type (for POST bodies).
-//
-const YTM_BASE_HEADERS = {
-  'User-Agent':              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Cobalt/Version',
-  'Accept':                  '*/*',
-  'Accept-Language':         'en-US,en;q=0.5',
-  'Origin':                  'https://music.youtube.com',
-  'Referer':                 'https://music.youtube.com/',
-  'X-Origin':                'https://music.youtube.com',
-  'X-Youtube-Client-Name':   '67',
-  'X-Youtube-Client-Version':'1.20230320.01.00',
-  'X-Goog-AuthUser':         '0',
-  'Sec-Fetch-Dest':          'empty',
-  'Sec-Fetch-Mode':          'same-origin',
-  'Sec-Fetch-Site':          'same-origin',
-};
-
-async function proxyYTM(request, url) {
+/* ══════════════════════════════════════════════════════════════
+   YOUTUBE MUSIC AUTH (TV device code flow)
+══════════════════════════════════════════════════════════════ */
+async function ytmGetLoginCode(request) {
   try {
-    const targetUrl = url.pathname.slice('/ytm/'.length) + (url.search || '');
+    const res = await fetch('https://oauth2.googleapis.com/device/code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: YT_TV_CLIENT_ID,
+        scope:     YT_TV_SCOPE,
+      }).toString(),
+    });
+    const data = await res.json();
+    if (!res.ok) return jsonResp(res.status, { error: data.error_description || data.error });
+    return jsonResp(200, data);
+  } catch(e) { return jsonResp(500, { error: e.message }); }
+}
 
-    if (!targetUrl.startsWith('https://')) {
-      return jsonResp(400, { error: 'Invalid proxy target' });
-    }
+async function ytmPollToken(request) {
+  try {
+    const { device_code } = await request.json();
+    if (!device_code) return jsonResp(400, { error: 'Missing device_code' });
+    const res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id:     YT_TV_CLIENT_ID,
+        client_secret: YT_TV_CLIENT_SECRET,
+        device_code,
+        grant_type:    'urn:ietf:params:oauth:grant-type:device_code',
+      }).toString(),
+    });
+    const data = await res.json();
+    // 428 = pending (authorization_pending), pass through
+    return jsonResp(res.ok ? 200 : res.status, data);
+  } catch(e) { return jsonResp(500, { error: e.message }); }
+}
 
-    // Start with the YTM base headers, then overlay the auth/content headers
-    // from the browser request
-    const headers = { ...YTM_BASE_HEADERS };
+async function ytmRefreshToken(request) {
+  try {
+    const { refresh_token } = await request.json();
+    if (!refresh_token) return jsonResp(400, { error: 'Missing refresh_token' });
+    const res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id:     YT_TV_CLIENT_ID,
+        client_secret: YT_TV_CLIENT_SECRET,
+        refresh_token,
+        grant_type:    'refresh_token',
+      }).toString(),
+    });
+    const data = await res.json();
+    if (!res.ok) return jsonResp(res.status, { error: data.error_description || data.error });
+    return jsonResp(200, data);
+  } catch(e) { return jsonResp(500, { error: e.message }); }
+}
 
-    // Forward Authorization (OAuth token) if present
-    const auth = request.headers.get('Authorization');
-    if (auth) headers['Authorization'] = auth;
+/* ══════════════════════════════════════════════════════════════
+   YOUTUBE MUSIC API  (worker calls InnerTube directly)
+══════════════════════════════════════════════════════════════ */
 
-    // Forward Content-Type for POST
-    const ct = request.headers.get('Content-Type');
-    if (ct) headers['Content-Type'] = ct;
+// Make an InnerTube request from the worker (no CORS issues here)
+async function innerTube(endpoint, body, accessToken) {
+  const url = `${YTM_API_BASE}/${endpoint}?prettyPrint=false`;
+  const headers = {
+    'Content-Type':            'application/json',
+    'User-Agent':              'com.google.android.apps.youtube.music/7.19.51 (Linux; U; Android 11) gzip',
+    'X-Goog-AuthUser':         '0',
+    'X-Youtube-Client-Name':   '26',
+    'X-Youtube-Client-Version':'7.19.51',
+    'Origin':                  'https://music.youtube.com',
+  };
+  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
 
-    // Forward any X-Goog-Visitor-Id if present
-    const visitorId = request.headers.get('X-Goog-Visitor-Id');
-    if (visitorId) headers['X-Goog-Visitor-Id'] = visitorId;
+  const res = await fetch(url, {
+    method:  'POST',
+    headers,
+    body: JSON.stringify({ context: ANDROID_CONTEXT, ...body }),
+  });
 
-    // X-Goog-Request-Time is a timestamp libmuse sets on every request.
-    // Forward it if present, otherwise generate one — YouTube requires it.
-    const reqTime = request.headers.get('X-Goog-Request-Time');
-    headers['X-Goog-Request-Time'] = reqTime || Date.now().toString();
+  const text = await res.text();
+  return { status: res.status, text };
+}
 
-    const init = { method: request.method, headers };
-    if (request.method === 'POST') init.body = await request.arrayBuffer();
+async function ytmSearch(request) {
+  try {
+    const { query, filter, accessToken } = await request.json();
+    if (!query) return jsonResp(400, { error: 'Missing query' });
 
-    const res  = await fetch(targetUrl, init);
-    const body = await res.arrayBuffer();
+    const body = { query };
+    if (filter) body.params = filter;
 
-    // Return response with CORS headers
-    const resHeaders = { ...CORS };
-    const ct2 = res.headers.get('Content-Type');
-    if (ct2) resHeaders['Content-Type'] = ct2;
+    const { status, text } = await innerTube('search', body, accessToken);
+    return new Response(text, { status, headers: { 'Content-Type': 'application/json', ...CORS } });
+  } catch(e) { return jsonResp(500, { error: e.message }); }
+}
 
-    return new Response(body, { status: res.status, headers: resHeaders });
+async function ytmBrowse(request) {
+  try {
+    const { browseId, params, accessToken } = await request.json();
+    if (!browseId) return jsonResp(400, { error: 'Missing browseId' });
+
+    const body = { browseId };
+    if (params) body.params = params;
+
+    const { status, text } = await innerTube('browse', body, accessToken);
+    return new Response(text, { status, headers: { 'Content-Type': 'application/json', ...CORS } });
+  } catch(e) { return jsonResp(500, { error: e.message }); }
+}
+
+async function ytmPlayer(request) {
+  try {
+    const { videoId, accessToken } = await request.json();
+    if (!videoId) return jsonResp(400, { error: 'Missing videoId' });
+
+    const { status, text } = await innerTube('player', { videoId }, accessToken);
+    return new Response(text, { status, headers: { 'Content-Type': 'application/json', ...CORS } });
   } catch(e) { return jsonResp(500, { error: e.message }); }
 }
 

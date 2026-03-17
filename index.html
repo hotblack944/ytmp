@@ -402,64 +402,68 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 
 <div class="toast" id="toast-el"></div>
 
-<script type="module">
-// ── Import libmuse from esm.sh ──────────────────────────────
-import * as muse from 'https://esm.sh/libmuse@0.1.2';
+<script>
+'use strict';
 
-// ── CONSTANTS ───────────────────────────────────────────────
-const SONOS_AUTH  = 'https://api.sonos.com/login/v3/oauth';
+/* ── CONSTANTS ── */
+const SONOS_AUTH   = 'https://api.sonos.com/login/v3/oauth';
 const REDIRECT_URI = window.location.href.split('?')[0].split('#')[0];
 const LS           = localStorage;
 
-// ── STATE ────────────────────────────────────────────────────
+/* ── STATE ── */
 let accessToken  = null, refreshToken = null, tokenExpiry = 0;
 let householdId  = null, proxyUrl = '';
 let groups       = [], curGroupId = null;
 let playing      = false, shuffle = false, repeatMode = false;
 let curSec       = 0, totSec = 0;
 let progTimer    = null, pollTimer = null, toastTimer = null;
-let ytmReady     = false, ytmSection_ = 'search', ytmPollTimer = null;
+// YTM state
+let ytmToken     = null, ytmRefresh = null, ytmExpiry = 0;
+let ytmAuthTimer = null;
+let ytmItems     = [];
 
-// ── HELPERS ──────────────────────────────────────────────────
+/* ── HELPERS ── */
 const fmt  = s => { s=Math.max(0,Math.floor(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
 const esc  = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const $    = id => document.getElementById(id);
 const setDot   = cls => { $('sdot').className = 'sdot'+(cls?' '+cls:''); };
-const setLabel = t   => { $('conn-lbl').textContent = t; };
+const setLabel = t   => $('conn-lbl').textContent = t;
 const showLoader = t => { $('loader').classList.remove('gone'); if(t) $('loader-text').textContent=t; };
 const hideLoader = () => $('loader').classList.add('gone');
 const setBanner  = (type,text) => { $('banner').className='banner '+type; $('banner-text').textContent=text; };
 
-// ── TAB SWITCHING ────────────────────────────────────────────
-window.switchTab = name => {
+/* ── TAB SWITCHING ── */
+function switchTab(name) {
   ['player','ytm'].forEach(t => {
     $('tab-'+t).classList.toggle('on', t===name);
     $('panel-'+t).classList.toggle('on', t===name);
   });
-  const navItems = document.querySelectorAll('.nitem');
-  navItems[0].classList.toggle('on', name==='player');
-  navItems[1].classList.toggle('on', name==='ytm');
-};
+  document.querySelectorAll('.nitem')[0].classList.toggle('on', name==='player');
+  document.querySelectorAll('.nitem')[1].classList.toggle('on', name==='ytm');
+}
 
-// ── INIT ─────────────────────────────────────────────────────
+/* ── INIT ── */
 document.addEventListener('DOMContentLoaded', async () => {
   $('redirect-display').textContent = REDIRECT_URI;
-  proxyUrl    = LS.getItem('sonos_proxy') || '';
-  accessToken = LS.getItem('sonos_at')    || null;
-  refreshToken= LS.getItem('sonos_rt')    || null;
-  tokenExpiry = parseInt(LS.getItem('sonos_exp')||'0');
-  householdId = LS.getItem('sonos_hh')    || null;
+
+  proxyUrl     = LS.getItem('sonos_proxy') || '';
+  accessToken  = LS.getItem('sonos_at')    || null;
+  refreshToken = LS.getItem('sonos_rt')    || null;
+  tokenExpiry  = parseInt(LS.getItem('sonos_exp')||'0');
+  householdId  = LS.getItem('sonos_hh')    || null;
+  ytmToken     = LS.getItem('ytm_at')      || null;
+  ytmRefresh   = LS.getItem('ytm_rt')      || null;
+  ytmExpiry    = parseInt(LS.getItem('ytm_exp')||'0');
 
   if(proxyUrl) $('proxy-url').value = proxyUrl;
   const sid = LS.getItem('sonos_client_id');
   if(sid) $('client-id').value = sid;
 
-  // Handle Sonos OAuth callback
   const params = new URLSearchParams(window.location.search);
   if(params.has('code')) {
-    history.replaceState({},  '', REDIRECT_URI);
+    history.replaceState({}, '', REDIRECT_URI);
     showLoader('Completing sign in…');
-    await handleCallback(params.get('code'));
+    await handleSonosCallback(params.get('code'));
     return;
   }
 
@@ -468,264 +472,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     try { await loadSystem(); } catch(e) { hideLoader(); setDot('err'); setLabel('Auth error'); setBanner('err','Session expired — reconnect in Settings'); }
   } else { hideLoader(); }
 
-  // Init YouTube Music
-  initMuse();
+  // Restore YTM state
+  if(ytmToken) setYtmConnected(true);
 });
 
-// ── MUSE / YOUTUBE MUSIC SETUP ───────────────────────────────
-function initMuse() {
-  if(!proxyUrl) return;
-
-  // Point all libmuse fetches through our Cloudflare Worker /ytm/ proxy
-  muse.set_option('fetch', (url, options) => {
-    return fetch(`${proxyUrl}/ytm/${url}`, options);
-  });
-
-  // Use localStorage to persist the YTM auth token
-  muse.setup({ store: new muse.LocalStorageStore() });
-
-  const auth = muse.get_option('auth');
-
-  // Check if already authenticated
-  if(auth.has_token()) {
-    setYtmConnected(true);
-    return;
-  }
-
-  // Listen for requires-login event from libmuse
-  auth.addEventListener('requires-login', event => {
-    const resolve = event.detail;
-    resolve(ytmAuthFlow);
-  });
-}
-
-function setYtmConnected(connected) {
-  ytmReady = connected;
-  $('ytm-dot').className = 'ytm-dot' + (connected ? ' ok' : '');
-  $('ytm-lbl').textContent = connected ? 'Connected' : 'Not connected';
-  $('ytm-conn-btn').textContent = connected ? 'Disconnect' : 'Connect';
-  $('ytm-sections').style.display = connected ? 'flex' : 'none';
-  $('ytm-search-row').style.display = connected ? 'flex' : 'none';
-  if(connected) loadYtmSection('search');
-}
-
-window.ytmConnect = async () => {
-  if(ytmReady) {
-    // Disconnect
-    muse.get_option('auth')._token = null;
-    LS.removeItem('libmuse:token');
-    setYtmConnected(false);
-    renderYtmList([]);
-    return;
-  }
-  if(!proxyUrl) { toast('Enter Worker URL in Settings first'); openSettings(); return; }
-  initMuse();
-  try {
-    await ytmAuthFlow();
-  } catch(e) {
-    toast('YouTube Music auth failed: ' + e.message);
-    $('auth-sheet').style.display = 'none';
-  }
-};
-
-async function ytmAuthFlow() {
-  const auth = muse.get_option('auth');
-  $('auth-sheet').style.display = 'block';
-  $('ytm-dot').className = 'ytm-dot busy';
-  $('ytm-lbl').textContent = 'Waiting for sign in…';
-
-  const loginCode = await auth.get_login_code();
-  $('auth-code').textContent = loginCode.user_code;
-  $('auth-url').textContent  = loginCode.verification_url;
-
-  await auth.load_token_with_code(loginCode.device_code, loginCode.interval);
-
-  $('auth-sheet').style.display = 'none';
-  setYtmConnected(true);
-  toast('YouTube Music connected!');
-}
-
-window.ytmCancelAuth = () => {
-  $('auth-sheet').style.display = 'none';
-  $('ytm-dot').className = 'ytm-dot';
-  $('ytm-lbl').textContent = 'Not connected';
-};
-
-// ── YTM SECTIONS ─────────────────────────────────────────────
-window.ytmSection = name => {
-  ytmSection_ = name;
-  document.querySelectorAll('.ytm-sec-btn').forEach((b,i) => {
-    b.classList.toggle('on', b.textContent.toLowerCase().replace(' ','') === name || (name==='liked' && b.textContent==='Liked songs') || (name==='history' && b.textContent==='History'));
-  });
-  $('ytm-search-row').style.display = name==='search' ? 'flex' : 'none';
-  if(name !== 'search') loadYtmSection(name);
-};
-
-async function loadYtmSection(name) {
-  if(!ytmReady) return;
-  renderYtmLoading();
-  try {
-    let items = [];
-    switch(name) {
-      case 'library':
-        const lib = await muse.get_library_songs();
-        items = (lib.songs || []).map(songToItem);
-        break;
-      case 'playlists':
-        const pl = await muse.get_library_playlists();
-        items = (pl.playlists || []).map(playlistToItem);
-        break;
-      case 'liked':
-        const liked = await muse.get_liked_songs();
-        items = (liked.songs || []).map(songToItem);
-        break;
-      case 'history':
-        const hist = await muse.get_history();
-        items = (hist.songs || []).map(songToItem);
-        break;
-      default:
-        renderYtmList([]);
-        return;
-    }
-    renderYtmList(items);
-  } catch(e) {
-    console.error('YTM section error:', e);
-    $('ytm-list').innerHTML = `<div class="ytm-empty">Failed to load: ${esc(e.message)}</div>`;
-  }
-}
-
-window.ytmSearch = async () => {
-  if(!ytmReady) { toast('Connect YouTube Music first'); return; }
-  const q = $('ytm-search').value.trim();
-  if(!q) return;
-  renderYtmLoading();
-  try {
-    const res   = await muse.search(q, { filter: 'songs' });
-    const items = (res.categories?.[0]?.results || res.songs || []).map(songToItem);
-    renderYtmList(items.length ? items : []);
-    if(!items.length) $('ytm-list').innerHTML = `<div class="ytm-empty">No results for "${esc(q)}"</div>`;
-  } catch(e) {
-    $('ytm-list').innerHTML = `<div class="ytm-empty">Search failed: ${esc(e.message)}</div>`;
-  }
-};
-
-function songToItem(song) {
-  return {
-    type:     'song',
-    id:       song.videoId,
-    title:    song.title || song.name || 'Unknown',
-    subtitle: song.artists?.map(a=>a.name).join(', ') || song.artist?.name || '',
-    thumb:    song.thumbnails?.slice(-1)[0]?.url || null,
-    duration: song.duration || song.durationSeconds || 0,
-  };
-}
-
-function playlistToItem(pl) {
-  return {
-    type:     'playlist',
-    id:       pl.playlistId,
-    title:    pl.title || pl.name || 'Playlist',
-    subtitle: pl.count ? `${pl.count} songs` : '',
-    thumb:    pl.thumbnails?.slice(-1)[0]?.url || null,
-  };
-}
-
-function renderYtmLoading() {
-  $('ytm-list').innerHTML = `<div class="ytm-empty"><div class="spinner-sm" style="margin:0 auto 8px"></div>Loading…</div>`;
-}
-
-function renderYtmList(items) {
-  if(!items.length) {
-    $('ytm-list').innerHTML = `<div class="ytm-empty">No items found</div>`;
-    return;
-  }
-  const fallback = `<svg width='20' height='20' viewBox='0 0 24 24' fill='var(--t3)'><path d='M12 3v10.55A4 4 0 1014 17V7h4V3h-6z'/></svg>`;
-  $('ytm-list').innerHTML = items.map((item, i) => `
-<div class="ytm-item" onclick="ytmItemClick(${i})">
-  <div class="ytm-thumb${item.type==='playlist'?' sq':''}">
-    ${item.thumb
-      ? `<img src="${esc(item.thumb)}" alt="" loading="lazy" onerror="this.outerHTML='${fallback.replace(/'/g,"&apos;")}'">` 
-      : fallback}
-  </div>
-  <div class="ytm-info">
-    <div class="ytm-name">${esc(item.title)}</div>
-    ${item.subtitle ? `<div class="ytm-sub">${esc(item.subtitle)}</div>` : ''}
-  </div>
-  <button class="ytm-play-btn" onclick="event.stopPropagation();ytmPlay(${i})" title="Play on Sonos">
-    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-  </button>
-</div>`).join('');
-  // Store items globally so click handlers can access them
-  window._ytmItems = items;
-}
-
-window.ytmItemClick = i => {
-  // If playlist, load its songs; if song, play it
-  const item = window._ytmItems?.[i];
-  if(!item) return;
-  if(item.type === 'playlist') {
-    loadPlaylist(item.id);
-  } else {
-    ytmPlay(i);
-  }
-};
-
-async function loadPlaylist(playlistId) {
-  renderYtmLoading();
-  try {
-    const pl    = await muse.get_playlist(playlistId);
-    const items = (pl.tracks || pl.songs || []).map(songToItem);
-    renderYtmList(items);
-  } catch(e) {
-    $('ytm-list').innerHTML = `<div class="ytm-empty">Failed to load playlist: ${esc(e.message)}</div>`;
-  }
-}
-
-window.ytmPlay = async i => {
-  const item = window._ytmItems?.[i];
-  if(!item) return;
-  if(!curGroupId) { toast('Select a Sonos room first'); switchTab('player'); return; }
-  if(item.type === 'playlist') { loadPlaylist(item.id); return; }
-
-  toast('Loading track…');
-  try {
-    // Get the song queue from libmuse (this gives us the stream URL)
-    const queue = await muse.get_queue(item.id, { radio: false });
-    const track = queue?.tracks?.[0];
-    const streamUrl = track?.formats
-      ?.filter(f => f.mimeType?.startsWith('audio/'))
-      ?.sort((a,b) => (b.bitrate||0)-(a.bitrate||0))[0]?.url;
-
-    if(!streamUrl) { toast('Could not get stream URL'); return; }
-
-    // Send stream URL to Sonos via the API
-    await sonosPost(`/groups/${curGroupId}/playback/playStreamUrl`, {
-      httpStreamUrl: streamUrl,
-      title:         item.title,
-      artist:        item.subtitle,
-    });
-
-    // Update now playing display
-    $('np-title').textContent  = item.title;
-    $('np-artist').textContent = item.subtitle;
-    if(item.thumb) {
-      $('np-art').innerHTML = `<img src="${esc(item.thumb)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
-    }
-    totSec   = item.duration || 0;
-    playing  = true;
-    syncPlayIcon();
-    startProg();
-    renderRooms();
-    switchTab('player');
-    toast('Playing on Sonos: ' + item.title);
-  } catch(e) {
-    console.error('ytmPlay error:', e);
-    toast('Playback failed: ' + e.message);
-  }
-};
-
-// ── SONOS AUTH ───────────────────────────────────────────────
-window.startOAuth = () => {
+/* ══════════════════════════════════════════════════════════════
+   SONOS AUTH + API
+══════════════════════════════════════════════════════════════ */
+function startOAuth() {
   const clientId = $('client-id').value.trim();
   const proxy    = $('proxy-url').value.trim().replace(/\/+$/,'');
   if(!proxy)    { toast('Enter your Worker URL first'); return; }
@@ -742,97 +496,401 @@ window.startOAuth = () => {
   url.searchParams.set('scope',         'playback-control-all');
   url.searchParams.set('state',         state);
   window.location.href = url.toString();
-};
+}
 
-async function handleCallback(code) {
+async function handleSonosCallback(code) {
   proxyUrl = LS.getItem('sonos_proxy') || '';
   if(!proxyUrl) { hideLoader(); toast('Worker URL missing'); openSettings(); return; }
   try {
-    const res  = await fetch(`${proxyUrl}/token`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ code, redirect_uri: REDIRECT_URI }),
-    });
+    const res  = await fetch(`${proxyUrl}/token`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code, redirect_uri:REDIRECT_URI}) });
     const data = await res.json();
-    if(!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    saveTokens(data);
+    if(!res.ok) throw new Error(data.error||`HTTP ${res.status}`);
+    saveSonosTokens(data);
     await loadSystem();
-  } catch(e) {
-    hideLoader(); setDot('err');
-    setBanner('err', 'Sign in failed: '+e.message);
-    openSettings();
-  }
+  } catch(e) { hideLoader(); setDot('err'); setBanner('err','Sign in failed: '+e.message); openSettings(); }
 }
 
-function saveTokens(d) {
+function saveSonosTokens(d) {
   accessToken  = d.access_token;
   refreshToken = d.refresh_token || refreshToken;
   tokenExpiry  = Date.now() + (d.expires_in||3600)*1000;
-  LS.setItem('sonos_at',  accessToken);
-  LS.setItem('sonos_rt',  refreshToken);
-  LS.setItem('sonos_exp', tokenExpiry.toString());
+  LS.setItem('sonos_at', accessToken); LS.setItem('sonos_rt', refreshToken); LS.setItem('sonos_exp', tokenExpiry.toString());
 }
 
-async function ensureFreshToken() {
+async function ensureSonosToken() {
   if(Date.now() < tokenExpiry - 60000) return;
   if(!refreshToken) throw new Error('No refresh token');
   proxyUrl = proxyUrl || LS.getItem('sonos_proxy') || '';
-  const res  = await fetch(`${proxyUrl}/refresh`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({refresh_token: refreshToken}),
-  });
+  const res  = await fetch(`${proxyUrl}/refresh`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({refresh_token:refreshToken}) });
   const data = await res.json();
   if(!res.ok) throw new Error(data.error||'Refresh failed');
-  saveTokens(data);
+  saveSonosTokens(data);
 }
 
-// ── SONOS API ────────────────────────────────────────────────
 async function sonosGet(path) {
-  await ensureFreshToken();
-  const res = await fetch(`${proxyUrl}/api${path}`, {headers:{'Authorization':`Bearer ${accessToken}`}});
+  await ensureSonosToken();
+  const res = await fetch(`${proxyUrl}/api${path}`, { headers:{'Authorization':`Bearer ${accessToken}`} });
   if(!res.ok) throw new Error(`GET ${path} → ${res.status}`);
   return res.json();
 }
 
 async function sonosPost(path, body={}) {
-  await ensureFreshToken();
-  const res = await fetch(`${proxyUrl}/api${path}`, {
-    method:'POST',
-    headers:{'Authorization':`Bearer ${accessToken}`,'Content-Type':'application/json'},
-    body: JSON.stringify(body),
-  });
+  await ensureSonosToken();
+  const res = await fetch(`${proxyUrl}/api${path}`, { method:'POST', headers:{'Authorization':`Bearer ${accessToken}`,'Content-Type':'application/json'}, body:JSON.stringify(body) });
   if(!res.ok) console.warn(`POST ${path} → ${res.status}`);
   return res;
 }
 
-// ── LOAD SYSTEM ──────────────────────────────────────────────
+/* ══════════════════════════════════════════════════════════════
+   YOUTUBE MUSIC AUTH  (device code flow via worker)
+══════════════════════════════════════════════════════════════ */
+async function ytmConnect() {
+  if(ytmToken) { ytmSignOut(); return; }
+  if(!proxyUrl) { toast('Enter Worker URL in Settings first'); openSettings(); return; }
+
+  $('auth-sheet').style.display = 'block';
+  $('ytm-dot').className = 'ytm-dot busy';
+  $('ytm-lbl').textContent = 'Getting login code…';
+  $('auth-code').textContent = '······';
+
+  try {
+    // 1. Get device code from worker
+    const res  = await fetch(`${proxyUrl}/ytm/auth/code`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error||'Failed to get login code');
+
+    $('auth-code').textContent = data.user_code;
+    $('auth-url').textContent  = data.verification_url || 'tv.youtube.com/activate';
+    $('ytm-lbl').textContent   = 'Waiting for sign in…';
+
+    // 2. Poll for token
+    const interval = (data.interval || 5) * 1000;
+    let attempts   = 0;
+    const maxAttempts = Math.floor((data.expires_in || 300) / (data.interval || 5));
+
+    ytmAuthTimer = setInterval(async () => {
+      attempts++;
+      if(attempts > maxAttempts) {
+        clearInterval(ytmAuthTimer);
+        $('auth-sheet').style.display = 'none';
+        toast('Login timed out — please try again');
+        return;
+      }
+      try {
+        const poll  = await fetch(`${proxyUrl}/ytm/auth/token`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({device_code: data.device_code}) });
+        const token = await poll.json();
+        if(token.access_token) {
+          clearInterval(ytmAuthTimer);
+          saveYtmTokens(token);
+          $('auth-sheet').style.display = 'none';
+          setYtmConnected(true);
+          toast('YouTube Music connected!');
+          loadYtmSection('library');
+        }
+        // authorization_pending = still waiting, keep polling
+      } catch(e) { console.warn('YTM poll:', e.message); }
+    }, interval);
+
+  } catch(e) {
+    $('auth-sheet').style.display = 'none';
+    $('ytm-dot').className = 'ytm-dot';
+    $('ytm-lbl').textContent = 'Not connected';
+    toast('YouTube Music auth failed: '+e.message);
+  }
+}
+
+function saveYtmTokens(d) {
+  ytmToken   = d.access_token;
+  ytmRefresh = d.refresh_token || ytmRefresh;
+  ytmExpiry  = Date.now() + (d.expires_in||3600)*1000;
+  LS.setItem('ytm_at', ytmToken); LS.setItem('ytm_rt', ytmRefresh); LS.setItem('ytm_exp', ytmExpiry.toString());
+}
+
+async function ensureYtmToken() {
+  if(Date.now() < ytmExpiry - 60000) return;
+  if(!ytmRefresh) throw new Error('No YTM refresh token');
+  const res  = await fetch(`${proxyUrl}/ytm/auth/refresh`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({refresh_token:ytmRefresh}) });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error||'YTM refresh failed');
+  saveYtmTokens(data);
+}
+
+function ytmCancelAuth() {
+  clearInterval(ytmAuthTimer);
+  $('auth-sheet').style.display = 'none';
+  $('ytm-dot').className = 'ytm-dot';
+  $('ytm-lbl').textContent = 'Not connected';
+}
+
+function ytmSignOut() {
+  ytmToken = ytmRefresh = null; ytmExpiry = 0;
+  ['ytm_at','ytm_rt','ytm_exp'].forEach(k=>LS.removeItem(k));
+  setYtmConnected(false);
+  renderYtmList([]);
+  toast('YouTube Music disconnected');
+}
+
+function setYtmConnected(on) {
+  $('ytm-dot').className = 'ytm-dot'+(on?' ok':'');
+  $('ytm-lbl').textContent = on ? 'Connected' : 'Not connected';
+  $('ytm-conn-btn').textContent = on ? 'Disconnect' : 'Connect';
+  $('ytm-sections').style.display = on ? 'flex' : 'none';
+  $('ytm-search-row').style.display = on ? 'flex' : 'none';
+  if(on) loadYtmSection('library');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   YOUTUBE MUSIC BROWSE / SEARCH
+══════════════════════════════════════════════════════════════ */
+async function ytmCall(endpoint, body) {
+  await ensureYtmToken();
+  const res = await fetch(`${proxyUrl}/ytm/${endpoint}`, {
+    method:  'POST',
+    headers: {'Content-Type':'application/json'},
+    body:    JSON.stringify({ ...body, accessToken: ytmToken }),
+  });
+  if(!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+function ytmSection(name) {
+  document.querySelectorAll('.ytm-sec-btn').forEach(b => b.classList.remove('on'));
+  event.target.classList.add('on');
+  $('ytm-search-row').style.display = name==='search' ? 'flex' : 'none';
+  if(name !== 'search') loadYtmSection(name);
+}
+
+async function loadYtmSection(name) {
+  renderYtmLoading();
+  try {
+    let items = [];
+    if(name === 'library') {
+      const data = await ytmCall('browse', { browseId: 'FEmusic_liked_videos' });
+      items = parseTrackList(data);
+    } else if(name === 'playlists') {
+      const data = await ytmCall('browse', { browseId: 'FEmusic_liked_playlists' });
+      items = parsePlaylistList(data);
+    } else if(name === 'liked') {
+      const data = await ytmCall('browse', { browseId: 'FEmusic_liked_videos' });
+      items = parseTrackList(data);
+    } else if(name === 'history') {
+      const data = await ytmCall('browse', { browseId: 'FEmusic_history' });
+      items = parseTrackList(data);
+    }
+    renderYtmList(items);
+  } catch(e) {
+    $('ytm-list').innerHTML = `<div class="ytm-empty">Failed to load: ${esc(e.message)}</div>`;
+  }
+}
+
+async function ytmSearch() {
+  if(!ytmToken) { toast('Connect YouTube Music first'); return; }
+  const q = $('ytm-search').value.trim();
+  if(!q) return;
+  renderYtmLoading();
+  try {
+    const data  = await ytmCall('search', { query: q });
+    const items = parseSearchResults(data);
+    renderYtmList(items.length ? items : []);
+    if(!items.length) $('ytm-list').innerHTML = `<div class="ytm-empty">No results for "${esc(q)}"</div>`;
+  } catch(e) {
+    $('ytm-list').innerHTML = `<div class="ytm-empty">Search failed: ${esc(e.message)}</div>`;
+  }
+}
+
+// ── InnerTube response parsers ──────────────────────────────
+function parseSearchResults(data) {
+  const items = [];
+  try {
+    const contents = data?.contents?.tabbedSearchResultsRenderer?.tabs?.[0]?.tabRenderer?.content
+      ?.sectionListRenderer?.contents || [];
+    for(const section of contents) {
+      const shelf = section.musicShelfRenderer;
+      if(!shelf) continue;
+      for(const item of shelf.contents || []) {
+        const r = item.musicResponsiveListItemRenderer;
+        if(!r) continue;
+        const parsed = parseResponsiveItem(r);
+        if(parsed) items.push(parsed);
+      }
+    }
+  } catch(e) { console.warn('parseSearchResults:', e); }
+  return items;
+}
+
+function parseTrackList(data) {
+  const items = [];
+  try {
+    const sections = data?.contents?.singleColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content
+      ?.sectionListRenderer?.contents || [];
+    for(const section of sections) {
+      const shelf = section.musicShelfRenderer || section.gridRenderer;
+      if(!shelf) continue;
+      for(const item of shelf.contents || []) {
+        const r = item.musicResponsiveListItemRenderer || item.musicTwoRowItemRenderer;
+        if(!r) continue;
+        const parsed = r.flexColumns ? parseResponsiveItem(r) : parseTwoRowItem(r);
+        if(parsed) items.push(parsed);
+      }
+    }
+  } catch(e) { console.warn('parseTrackList:', e); }
+  return items;
+}
+
+function parsePlaylistList(data) {
+  const items = [];
+  try {
+    const sections = data?.contents?.singleColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content
+      ?.sectionListRenderer?.contents || [];
+    for(const section of sections) {
+      const grid = section.gridRenderer;
+      if(!grid) continue;
+      for(const item of grid.contents || []) {
+        const r = item.musicTwoRowItemRenderer;
+        if(!r) continue;
+        const parsed = parseTwoRowItem(r);
+        if(parsed) items.push(parsed);
+      }
+    }
+  } catch(e) { console.warn('parsePlaylistList:', e); }
+  return items;
+}
+
+function parseResponsiveItem(r) {
+  try {
+    const title    = r.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text;
+    const artist   = r.flexColumns?.[1]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text;
+    const thumb    = r.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.slice(-1)[0]?.url;
+    const videoId  = r.playlistItemData?.videoId || r.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.navigationEndpoint?.watchEndpoint?.videoId;
+    const playlistId = r.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.navigationEndpoint?.watchEndpoint?.playlistId;
+    if(!title) return null;
+    return { type: videoId ? 'song' : 'playlist', id: videoId || playlistId, title, subtitle: artist||'', thumb: thumb||null };
+  } catch(e) { return null; }
+}
+
+function parseTwoRowItem(r) {
+  try {
+    const title    = r.title?.runs?.[0]?.text;
+    const subtitle = r.subtitle?.runs?.map(x=>x.text).join('');
+    const thumb    = r.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails?.slice(-1)[0]?.url;
+    const videoId  = r.navigationEndpoint?.watchEndpoint?.videoId;
+    const playlistId = r.navigationEndpoint?.browseEndpoint?.browseId || r.navigationEndpoint?.watchEndpoint?.playlistId;
+    if(!title) return null;
+    return { type: videoId ? 'song' : 'playlist', id: videoId || playlistId, title, subtitle: subtitle||'', thumb: thumb||null };
+  } catch(e) { return null; }
+}
+
+function renderYtmLoading() {
+  $('ytm-list').innerHTML = `<div class="ytm-empty"><div class="spinner-sm" style="margin:0 auto 8px"></div>Loading…</div>`;
+}
+
+function renderYtmList(items) {
+  ytmItems = items;
+  if(!items.length) { $('ytm-list').innerHTML = `<div class="ytm-empty">No items found</div>`; return; }
+  const fb = `<svg width='20' height='20' viewBox='0 0 24 24' fill='var(--t3)'><path d='M12 3v10.55A4 4 0 1014 17V7h4V3h-6z'/></svg>`;
+  $('ytm-list').innerHTML = items.map((item,i) => `
+<div class="ytm-item" onclick="ytmItemClick(${i})">
+  <div class="ytm-thumb${item.type==='playlist'?' sq':''}">
+    ${item.thumb ? `<img src="${esc(item.thumb)}" alt="" loading="lazy" onerror="this.outerHTML='${fb.replace(/'/g,"&apos;")}'" >` : fb}
+  </div>
+  <div class="ytm-info">
+    <div class="ytm-name">${esc(item.title)}</div>
+    ${item.subtitle ? `<div class="ytm-sub">${esc(item.subtitle)}</div>` : ''}
+  </div>
+  <button class="ytm-play-btn" onclick="event.stopPropagation();ytmPlay(${i})" title="Play on Sonos">
+    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+</div>`).join('');
+}
+
+async function ytmItemClick(i) {
+  const item = ytmItems[i];
+  if(!item) return;
+  if(item.type === 'playlist') {
+    renderYtmLoading();
+    try {
+      const data  = await ytmCall('browse', { browseId: item.id });
+      const items = parseTrackList(data);
+      renderYtmList(items.length ? items : []);
+      if(!items.length) $('ytm-list').innerHTML = `<div class="ytm-empty">Playlist is empty</div>`;
+    } catch(e) { $('ytm-list').innerHTML = `<div class="ytm-empty">Failed: ${esc(e.message)}</div>`; }
+  } else {
+    ytmPlay(i);
+  }
+}
+
+async function ytmPlay(i) {
+  const item = ytmItems[i];
+  if(!item || !item.id) return;
+  if(!curGroupId) { toast('Select a Sonos room first'); switchTab('player'); return; }
+
+  toast('Loading track…');
+  try {
+    // Get stream URL from worker's player endpoint
+    const data     = await ytmCall('player', { videoId: item.id });
+    const formats  = data?.streamingData?.formats || [];
+    const adaptive = data?.streamingData?.adaptiveFormats || [];
+    const allFormats = [...formats, ...adaptive];
+
+    // Pick best audio-only stream
+    const audioFormats = allFormats
+      .filter(f => f.mimeType?.startsWith('audio/') && f.url)
+      .sort((a,b) => (b.bitrate||0)-(a.bitrate||0));
+
+    const streamUrl = audioFormats[0]?.url;
+    if(!streamUrl) { toast('No stream URL found'); return; }
+
+    // Send to Sonos
+    await sonosPost(`/groups/${curGroupId}/playback/playStreamUrl`, {
+      httpStreamUrl: streamUrl,
+      title:         item.title,
+      artist:        item.subtitle,
+    });
+
+    // Update now playing UI
+    $('np-title').textContent  = item.title;
+    $('np-artist').textContent = item.subtitle;
+    if(item.thumb) $('np-art').innerHTML = `<img src="${esc(item.thumb)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
+    playing = true; syncPlayIcon(); startProg(); renderRooms();
+    switchTab('player');
+    toast('Playing: '+item.title);
+  } catch(e) {
+    console.error('ytmPlay:', e);
+    toast('Playback failed: '+e.message);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SONOS SYSTEM + PLAYBACK
+══════════════════════════════════════════════════════════════ */
 async function loadSystem() {
   setDot('busy'); setLabel('Loading…');
   const hData = await sonosGet('/households');
   if(!hData.households?.length) throw new Error('No households');
   if(!householdId || !hData.households.find(h=>h.id===householdId)) {
-    householdId = hData.households[0].id;
-    LS.setItem('sonos_hh', householdId);
+    householdId = hData.households[0].id; LS.setItem('sonos_hh', householdId);
   }
   await loadGroups();
   hideLoader(); setDot('ok'); setLabel('Connected');
   setBanner('ok', `Connected · ${groups.length} room${groups.length!==1?'s':''} found`);
   closeModal('settings-modal');
   startPolling();
-  initMuse(); // Init YTM after we have the proxy URL
 }
 
 async function loadGroups() {
-  const data    = await sonosGet(`/households/${householdId}/groups`);
-  const players = data.players || [];
+  const data = await sonosGet(`/households/${householdId}/groups`);
+  const players = data.players||[];
   groups = (data.groups||[]).map(g => {
-    const prev   = groups.find(eg=>eg.id===g.id);
+    const prev = groups.find(eg=>eg.id===g.id);
     const player = players.find(p=>g.playerIds?.includes(p.id));
     return {id:g.id, name:g.name, playerIds:g.playerIds||[], vol:player?.volume??prev?.vol??50, grouped:false};
   });
   renderRooms();
 }
 
-// ── POLLING ──────────────────────────────────────────────────
 function startPolling() {
   clearInterval(pollTimer);
   pollTimer = setInterval(pollPlayback, 8000);
@@ -846,60 +904,56 @@ async function pollPlayback() {
       sonosGet(`/groups/${curGroupId}/playback`),
       sonosGet(`/groups/${curGroupId}/playbackMetadata`),
     ]);
-    const nowPlaying = pb.playbackState === 'PLAYBACK_STATE_PLAYING';
-    if(nowPlaying !== playing) {
-      playing = nowPlaying; syncPlayIcon();
-      if(playing && !progTimer) startProg();
-      else if(!playing) { clearInterval(progTimer); progTimer=null; }
+    const nowPlaying = pb.playbackState==='PLAYBACK_STATE_PLAYING';
+    if(nowPlaying!==playing) {
+      playing=nowPlaying; syncPlayIcon();
+      if(playing&&!progTimer) startProg();
+      else if(!playing){clearInterval(progTimer);progTimer=null;}
     }
-    if(pb.positionMillis!==undefined) curSec = Math.round(pb.positionMillis/1000);
+    if(pb.positionMillis!==undefined) curSec=Math.round(pb.positionMillis/1000);
     if(pb.volume!==undefined) {
-      const g = groups.find(g=>g.id===curGroupId); if(g) g.vol=pb.volume;
+      const g=groups.find(g=>g.id===curGroupId); if(g) g.vol=pb.volume;
       $('mvol').value=$('mvol-val').textContent=pb.volume;
     }
-    const t = meta.currentItem?.track;
+    const t=meta.currentItem?.track;
     if(t) {
-      $('np-title').textContent  = t.name||'Unknown';
-      $('np-artist').textContent = t.artist?.name||t.artists?.[0]?.name||'';
-      if(t.durationMillis) totSec = Math.round(t.durationMillis/1000);
+      $('np-title').textContent=t.name||'Unknown';
+      $('np-artist').textContent=t.artist?.name||t.artists?.[0]?.name||'';
+      if(t.durationMillis) totSec=Math.round(t.durationMillis/1000);
       if(t.imageUrl) $('np-art').innerHTML=`<img src="${esc(t.imageUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
       updateProg();
     }
     if(pb.playModes) {
       shuffle=!!pb.playModes.shuffle; repeatMode=!!pb.playModes.repeat;
-      $('shuf-btn').classList.toggle('lit',shuffle);
-      $('rep-btn').classList.toggle('lit',repeatMode);
+      $('shuf-btn').classList.toggle('lit',shuffle); $('rep-btn').classList.toggle('lit',repeatMode);
     }
     renderRooms();
   } catch(e) { console.warn('poll:',e.message); }
 }
 
-// ── ROOMS ────────────────────────────────────────────────────
-window.selectRoom = id => {
-  curGroupId=id;
-  const g=groups.find(g=>g.id===id);
-  $('np-room').textContent = g?.name||id;
+function selectRoom(id) {
+  curGroupId=id; const g=groups.find(g=>g.id===id);
+  $('np-room').textContent=g?.name||id;
   if(g){$('mvol').value=g.vol;$('mvol-val').textContent=g.vol;}
-  renderRooms(); pollPlayback();
-  toast('Room: '+(g?.name||id));
-};
-window.toggleGroup = (i,e) => {
+  renderRooms(); pollPlayback(); toast('Room: '+(g?.name||id));
+}
+function toggleGroup(i,e) {
   e.stopPropagation(); groups[i].grouped=!groups[i].grouped; renderRooms();
   toast(groups[i].name+(groups[i].grouped?' grouped':' ungrouped'));
-};
-window.groupAll = async () => {
+}
+async function groupAll() {
   if(!curGroupId){toast('Select a room first');return;}
   groups.filter(g=>g.id!==curGroupId).forEach(g=>g.grouped=true); renderRooms();
   for(const g of groups.filter(g=>g.id!==curGroupId))
     try{await sonosPost(`/groups/${curGroupId}/groups/modifyGroupMembers`,{playerIdsToAdd:g.playerIds});}catch(e){console.warn(e);}
   toast('All rooms grouped'); setTimeout(loadGroups,2000);
-};
-window.ungroupAll = async () => {
+}
+async function ungroupAll() {
   groups.forEach(g=>g.grouped=false); renderRooms();
   for(const g of groups.filter(g=>g.id!==curGroupId&&g.playerIds.length))
     try{await sonosPost(`/groups/${g.id}/groups/createGroup`,{playerIds:g.playerIds});}catch(e){console.warn(e);}
   toast('Rooms ungrouped'); setTimeout(loadGroups,2000);
-};
+}
 
 function renderRooms() {
   const grid=$('rooms-grid');
@@ -909,8 +963,7 @@ function renderRooms() {
   }
   grid.innerHTML=groups.map((g,i)=>{
     const active=g.id===curGroupId, isPlay=active&&playing;
-    return `
-<div class="rcard${active?' active':''}${g.grouped?' grouped':''}" onclick="selectRoom('${esc(g.id)}')">
+    return `<div class="rcard${active?' active':''}${g.grouped?' grouped':''}" onclick="selectRoom('${esc(g.id)}')">
   <div class="rcard-top">
     <div><div class="rname">${esc(g.name)}</div><div class="rstate">${isPlay?'<span class="pulse" style="color:var(--red2)">▸ Playing</span>':g.grouped&&!active?'Grouped':'Idle'}</div></div>
     <input type="checkbox" class="rchk" ${g.grouped?'checked':''} onclick="toggleGroup(${i},event)">
@@ -925,90 +978,82 @@ function renderRooms() {
   }).join('');
 }
 
-// ── PLAYBACK CONTROLS ────────────────────────────────────────
-window.togglePlay = async () => {
+async function togglePlay() {
   if(!curGroupId){toast('Select a room first');return;}
   playing=!playing; syncPlayIcon();
   if(playing) startProg(); else{clearInterval(progTimer);progTimer=null;}
   renderRooms();
   await sonosPost(`/groups/${curGroupId}/playback/${playing?'play':'pause'}`);
-};
-function syncPlayIcon(){
-  $('pico').innerHTML=playing
-    ?'<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
-    :'<path d="M8 5v14l11-7z"/>';
 }
-window.prevTrack = async () => {
+function syncPlayIcon() {
+  $('pico').innerHTML=playing?'<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>':'<path d="M8 5v14l11-7z"/>';
+}
+async function prevTrack() {
   if(!curGroupId) return;
   if(curSec>3){curSec=0;updateProg();await sonosPost(`/groups/${curGroupId}/playback/seek`,{positionMillis:0});return;}
-  await sonosPost(`/groups/${curGroupId}/playback/skipToPreviousTrack`);
-  setTimeout(pollPlayback,1000);
-};
-window.nextTrack = async () => {
+  await sonosPost(`/groups/${curGroupId}/playback/skipToPreviousTrack`); setTimeout(pollPlayback,1000);
+}
+async function nextTrack() {
   if(!curGroupId) return;
-  await sonosPost(`/groups/${curGroupId}/playback/skipToNextTrack`);
-  setTimeout(pollPlayback,1000);
-};
-function startProg(){
+  await sonosPost(`/groups/${curGroupId}/playback/skipToNextTrack`); setTimeout(pollPlayback,1000);
+}
+function startProg() {
   clearInterval(progTimer);
   progTimer=setInterval(()=>{if(!playing)return;curSec=Math.min(curSec+1,totSec||9999);updateProg();},1000);
 }
-function updateProg(){
+function updateProg() {
   const pct=totSec>0?Math.min((curSec/totSec)*100,100):0;
   $('prog-fill').style.width=pct.toFixed(2)+'%';
-  $('t-cur').textContent=fmt(curSec);
-  $('t-tot').textContent=fmt(totSec);
+  $('t-cur').textContent=fmt(curSec); $('t-tot').textContent=fmt(totSec);
 }
-window.seekClick = e => {
+function seekClick(e) {
   if(!curGroupId||!totSec) return;
-  const pct=Math.max(0,Math.min(1,e.offsetX/$('prog-bar').offsetWidth));
-  curSec=Math.round(pct*totSec); updateProg();
-  sonosPost(`/groups/${curGroupId}/playback/seek`,{positionMillis:curSec*1000});
-};
-window.toggleShuffle = async () => {
+  curSec=Math.round(Math.max(0,Math.min(1,e.offsetX/$('prog-bar').offsetWidth))*totSec);
+  updateProg(); sonosPost(`/groups/${curGroupId}/playback/seek`,{positionMillis:curSec*1000});
+}
+async function toggleShuffle() {
   shuffle=!shuffle; $('shuf-btn').classList.toggle('lit',shuffle);
   if(curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`,{playModes:{shuffle}});
   toast('Shuffle '+(shuffle?'on':'off'));
-};
-window.toggleRepeat = async () => {
+}
+async function toggleRepeat() {
   repeatMode=!repeatMode; $('rep-btn').classList.toggle('lit',repeatMode);
   if(curGroupId) await sonosPost(`/groups/${curGroupId}/playback/playMode`,{playModes:{repeat:repeatMode}});
   toast('Repeat '+(repeatMode?'on':'off'));
-};
-window.onMasterVol = async v => {
+}
+async function onMasterVol(v) {
   v=parseInt(v); $('mvol-val').textContent=v;
   if(!curGroupId) return;
   const g=groups.find(g=>g.id===curGroupId); if(g) g.vol=v;
   await sonosPost(`/groups/${curGroupId}/groupVolume`,{volume:v});
-};
-window.onRoomVol = async (i,v) => {
+}
+async function onRoomVol(i,v) {
   v=parseInt(v); groups[i].vol=v; $('rvv'+i).textContent=v;
   await sonosPost(`/groups/${groups[i].id}/groupVolume`,{volume:v});
-};
+}
 
-// ── SETTINGS ─────────────────────────────────────────────────
-window.refreshRooms = async () => {
+/* ── SETTINGS ── */
+async function refreshRooms() {
   if(!accessToken){toast('Not connected');return;}
-  toast('Refreshing rooms…');
-  try{await loadGroups();toast('Rooms updated');}catch(e){toast('Failed: '+e.message);}
-};
-window.signOut = () => {
+  toast('Refreshing…'); try{await loadGroups();toast('Rooms updated');}catch(e){toast('Failed: '+e.message);}
+}
+function signOut() {
   accessToken=refreshToken=householdId=null; tokenExpiry=0;
   groups=[]; curGroupId=null; playing=false;
   clearInterval(progTimer); clearInterval(pollTimer); progTimer=pollTimer=null;
   ['sonos_at','sonos_rt','sonos_exp','sonos_hh'].forEach(k=>LS.removeItem(k));
   setDot(''); setLabel('Not connected'); setBanner('info','Not connected');
   syncPlayIcon(); renderRooms(); closeModal('settings-modal'); toast('Signed out');
-};
+}
 
-// ── MODAL / TOAST ─────────────────────────────────────────────
-window.openSettings = () => $('settings-modal').classList.add('open');
-window.closeModal   = id => $(id).classList.remove('open');
-window.onModalBg    = (e,id) => { if(e.target===$(id)) closeModal(id); };
-window.toast = msg => {
+/* ── MODAL / TOAST ── */
+function openSettings() { $('settings-modal').classList.add('open'); }
+function closeModal(id) { $(id).classList.remove('open'); }
+function onModalBg(e,id) { if(e.target===$(id)) closeModal(id); }
+function toast(msg) {
   const el=$('toast-el'); el.textContent=msg; el.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
-};
+}
 </script>
 </body>
 </html>
