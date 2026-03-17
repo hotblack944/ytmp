@@ -812,10 +812,9 @@ async function ytmItemClick(i) {
   if(item.type === 'playlist') {
     renderYtmLoading();
     try {
-      const data  = await ytmCall('browse', { browseId: item.id });
-      const items = parseTrackList(data);
-      renderYtmList(items.length ? items : []);
-      if(!items.length) $('ytm-list').innerHTML = `<div class="ytm-empty">Playlist is empty</div>`;
+      const data = await ytmCall('playlist-items', { playlistId: item.id });
+      renderYtmList(data?.items || []);
+      if(!data?.items?.length) $('ytm-list').innerHTML = `<div class="ytm-empty">Playlist is empty</div>`;
     } catch(e) { $('ytm-list').innerHTML = `<div class="ytm-empty">Failed: ${esc(e.message)}</div>`; }
   } else {
     ytmPlay(i);
@@ -827,36 +826,33 @@ async function ytmPlay(i) {
   if(!item || !item.id) return;
   if(!curGroupId) { toast('Select a Sonos room first'); switchTab('player'); return; }
 
-  toast('Loading track…');
+  toast('Loading stream…');
   try {
-    // Get stream URL from worker's player endpoint
-    const data     = await ytmCall('player', { videoId: item.id });
-    const formats  = data?.streamingData?.formats || [];
-    const adaptive = data?.streamingData?.adaptiveFormats || [];
-    const allFormats = [...formats, ...adaptive];
+    // Get audio stream URL via anonymous InnerTube (no auth needed)
+    const stream = await fetch(`${proxyUrl}/ytm/stream`, {
+      method:  'POST',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify({ videoId: item.id }),
+    }).then(r => r.json());
 
-    // Pick best audio-only stream
-    const audioFormats = allFormats
-      .filter(f => f.mimeType?.startsWith('audio/') && f.url)
-      .sort((a,b) => (b.bitrate||0)-(a.bitrate||0));
+    if(stream.error) { toast('Stream error: '+stream.error); return; }
+    if(!stream.url)  { toast('No stream URL found'); return; }
 
-    const streamUrl = audioFormats[0]?.url;
-    if(!streamUrl) { toast('No stream URL found'); return; }
-
-    // Send to Sonos
+    // Send stream URL to Sonos
     await sonosPost(`/groups/${curGroupId}/playback/playStreamUrl`, {
-      httpStreamUrl: streamUrl,
-      title:         item.title,
-      artist:        item.subtitle,
+      httpStreamUrl: stream.url,
+      title:         stream.title || item.title,
+      artist:        stream.artist || item.subtitle,
     });
 
     // Update now playing UI
-    $('np-title').textContent  = item.title;
-    $('np-artist').textContent = item.subtitle;
-    if(item.thumb) $('np-art').innerHTML = `<img src="${esc(item.thumb)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
-    playing = true; syncPlayIcon(); startProg(); renderRooms();
+    $('np-title').textContent  = stream.title  || item.title;
+    $('np-artist').textContent = stream.artist || item.subtitle;
+    const thumb = stream.thumb || item.thumb;
+    if(thumb) $('np-art').innerHTML = `<img src="${esc(thumb)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
+    totSec = 0; playing = true; syncPlayIcon(); startProg(); renderRooms();
     switchTab('player');
-    toast('Playing: '+item.title);
+    toast('Playing: '+(stream.title || item.title));
   } catch(e) {
     console.error('ytmPlay:', e);
     toast('Playback failed: '+e.message);
